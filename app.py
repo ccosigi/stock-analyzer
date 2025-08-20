@@ -345,10 +345,9 @@ def get_trading_day_after(data_index, target_date, days_after):
     특정 날짜로부터 정확히 N 달력일 후의 가장 가까운 거래일을 찾는 함수
     """
     try:
-        # N 달력일 후의 날짜 계산
         target_calendar_date = target_date + pd.Timedelta(days=days_after)
         
-        # 해당 날짜 이후의 첫 번째 거래일 찾기
+        
         future_dates = data_index[data_index >= target_calendar_date]
         
         if len(future_dates) > 0:
@@ -366,12 +365,11 @@ def add_nday_later_prices(signal_days, data, days_after):
     actual_days_list = []
     
     for signal_date in signal_days.index:
-        # N 달력일 후의 거래일 찾기
         future_date = get_trading_day_after(data.index, signal_date, days_after)
         
         if future_date is not None and future_date in data.index:
             nday_later_prices.append(data.loc[future_date, 'Close'])
-            # 실제 경과된 달력일 계산
+            
             actual_days = (future_date - signal_date).days
             actual_days_list.append(actual_days)
         else:
@@ -381,6 +379,33 @@ def add_nday_later_prices(signal_days, data, days_after):
     signal_days[f'Price_{days_after}D_Later'] = nday_later_prices
     signal_days[f'Actual_Days_Later'] = actual_days_list
     return signal_days
+
+def find_consecutive_drop_periods(data, analysis_days, drop_threshold):
+    signal_periods = []
+    
+    for i in range(analysis_days, len(data)):
+        period_start = i - analysis_days
+        period_end = i
+        
+        # 기간의 시작가격과 종료가격
+        start_price = data.iloc[period_start]['Close']
+        end_price = data.iloc[period_end]['Close']
+        
+        # 총 하락률 계산
+        total_drop = ((start_price - end_price) / start_price) * 100
+        
+        if total_drop >= drop_threshold:
+            period_data = {
+                'start_date': data.iloc[period_start].name,
+                'end_date': data.iloc[period_end].name,
+                'start_price': start_price,
+                'end_price': end_price,
+                'total_drop_pct': total_drop,
+                'analysis_days': analysis_days
+            }
+            signal_periods.append(period_data)
+    
+    return signal_periods
 
 def display_metric(title, value, interpretation, sentiment):
     css_class = f"metric-container {sentiment}"
@@ -502,22 +527,25 @@ def market_sentiment_tab():
 
 # Tab 2: N-Day Drop Analysis
 def nday_analysis_tab():
-    st.markdown('<div class="sub-header">📉 N일 후 반등 여부 분석기</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">📉 연속 하락 분석기</div>', unsafe_allow_html=True)
     
     st.markdown("""
     <div class="info-box">
         <h4>💡 분석 개요</h4>
-        <p>특정 주식이 특정 퍼센트 이상 하락한 날을 기준으로, <strong>N일 후 주가의 방향(상승/하락)</strong>을 확인합니다.</p>
-        <p><strong>활용법</strong>: 주가 하락 시 즉시 매도할지, 며칠 기다릴지, 오히려 매수할지 통계적으로 판단할 수 있습니다.</p>
+        <p><strong>하락 분석</strong>: a일 동안 b% 이상 하락한 경우, 마지막 하락일 기준 c일 후 주가 방향을 분석합니다.</p>
+        <ul>
+            <li><strong>분석기간</strong>: 몇일 동안의 하락을 확인할지 설정</li>
+            <li><strong>하락기준</strong>: 해당 기간 동안 총 몇 % 이상 하락했는지 기준</li>
+            <li><strong>~일 후 주가</strong>: 하락 마지막일 기준 며칠 후를 분석할지 설정</li>
+        </ul>
+        <p><strong>예시</strong>: 3일 동안 총 10% 하락 → 마지막일 기준 5일 후 주가가 회복되었나?</p>
         <p><strong>해외 주식</strong>: 티커로 검색 &nbsp;&nbsp;&nbsp;&nbsp; <strong>국내 주식</strong>: 종목명 검색이 안될시 종목 코드 입력</p>
         
     </div>
     """, unsafe_allow_html=True)
     
-
-    
     # Input controls
-    col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+    col1, col2, col3, col4, col5 = st.columns([1.2, 1, 1, 1, 1])
     
     with col1:
         ticker_input = st.text_input("📊 종목 입력", 
@@ -525,12 +553,20 @@ def nday_analysis_tab():
                                    help="예: QQQ, SPY, AAPL, 삼성전자, 005930 등")
     
     with col2:
-        drop_threshold = st.slider("📉 하락 기준 (%)", 
-                                 min_value=0.5, max_value=20.0, 
-                                 value=1.0, step=0.5,
-                                 help="전일 대비 이 퍼센트 이상 하락한 날을 분석")
+        analysis_days = st.number_input("📅 분석기간 (일)", 
+                                      min_value=1, max_value=30, 
+                                      value=1, step=1,
+                                      help="연속 며칠 동안의 하락을 분석할지")
     
+
     with col3:
+        drop_threshold = st.number_input("📉 하락기준 (%)", 
+                                  min_value=1.0, max_value=99.0, 
+                                  value=5.0, step=0.5,
+                                  help="분석기간 동안 총 이만큼 하락한 경우")
+    
+
+    with col4:
         day_options = {
             "1일": 1,
             "3일": 3,
@@ -544,20 +580,20 @@ def nday_analysis_tab():
         }
         
         selected_label = st.selectbox(
-            "📆 분석 기간 (일)", 
+            "📈 ~일 후 주가", 
             options=list(day_options.keys()),
             index=1,  # "3일"이 기본값
-            help="하락일로부터 며칠 후를 분석할지 선택"
+            help="하락 마지막일로부터 며칠 후를 분석할지 선택"
         )
-    
+        
         # 실제 값 가져오기
         days_after = day_options[selected_label]
     
-    with col4:
+    with col5:
         start_date = st.date_input("📅 분석 시작일", 
                                  value=pd.to_datetime("2020-01-01"),
-                                 min_value=pd.to_datetime("1990-01-01"),  # 원하는 최소 날짜
-                                 max_value=pd.to_datetime("today"),       # 최대 날짜는 오늘로 제한
+                                 min_value=pd.to_datetime("1990-01-01"),
+                                 max_value=pd.to_datetime("today"),
                                  help="이 날짜부터 현재까지 분석")
     
     # 티커 처리 및 표시
@@ -592,55 +628,55 @@ def nday_analysis_tab():
                     data.columns = data.columns.droplevel(1)
                 
                 data = data[['Close']].copy()
-                data['Pct_Change'] = data['Close'].pct_change() * 100
                 
-                # Filter signal days (하락 기준 이상 하락한 날)
-                signal_days = data[data['Pct_Change'] <= -drop_threshold].copy()
+                # 연속 하락 기간 찾기
+                signal_periods = find_consecutive_drop_periods(data, analysis_days, drop_threshold)
                 
-                if len(signal_days) == 0:
-                    st.warning(f"⚠️ {drop_threshold}% 이상 하락한 날이 없습니다. 기준을 낮춰보세요.")
+                if len(signal_periods) == 0:
+                    st.warning(f"⚠️ {analysis_days}일 동안 {drop_threshold}% 이상 하락한 기간이 없습니다. 기준을 조정해보세요.")
                     return
                 
-                # Add N-day later data
-                signal_days['Price_Today'] = signal_days['Close']
+                # DataFrame으로 변환
+                signal_df = pd.DataFrame(signal_periods)
+                signal_df.set_index('end_date', inplace=True)
                 
-                # 정확한 거래일 기준으로 N일 후 가격 계산
-                signal_days = add_nday_later_prices(signal_days, data, days_after)
+                # N일 후 가격 데이터 추가
+                signal_df = add_nday_later_prices(signal_df, data, days_after)
                 
                 # NaN 값 제거 (N일 후 데이터가 없는 경우)
-                signal_days = signal_days.dropna(subset=[f'Price_{days_after}D_Later'])
+                signal_df = signal_df.dropna(subset=[f'Price_{days_after}D_Later'])
                 
                 # 실제 달력일 수 검증을 위한 추가 정보 표시
-                if len(signal_days) > 0:
-                    avg_actual_days = signal_days['Actual_Days_Later'].mean()
+                if len(signal_df) > 0:
+                    avg_actual_days = signal_df['Actual_Days_Later'].mean()
                     st.info(f"📅 목표: {days_after}일 후 → 실제 평균: {avg_actual_days:.1f}일 후 데이터 사용 (주말/공휴일로 인한 차이)")
                 
-                if len(signal_days) == 0:
-                    st.warning(f"⚠️ {days_after}일 후 데이터가 있는 하락일이 없습니다. 기간을 조정해보세요.")
+                if len(signal_df) == 0:
+                    st.warning(f"⚠️ {days_after}일 후 데이터가 있는 하락 기간이 없습니다. 기간을 조정해보세요.")
                     return
                 
-                # Win/Lose 판단
-                signal_days['Result'] = signal_days.apply(
-                    lambda row: 'Win' if row['Price_Today'] > row[f'Price_{days_after}D_Later'] else 'Lose',
+                # Win/Lose 판단 (마지막 하락일 기준으로 N일 후 가격이 올랐는지)
+                signal_df['Result'] = signal_df.apply(
+                    lambda row: 'Win' if row['end_price'] < row[f'Price_{days_after}D_Later'] else 'Lose',
                     axis=1
                 )
                 
-                # Calculate price change
-                signal_days[f'Price_Change_{days_after}D'] = (
-                    (signal_days[f'Price_{days_after}D_Later'] - signal_days['Price_Today']) / signal_days['Price_Today'] * 100
+                # 가격 변화 계산
+                signal_df[f'Price_Change_{days_after}D'] = (
+                    (signal_df[f'Price_{days_after}D_Later'] - signal_df['end_price']) / signal_df['end_price'] * 100
                 )
                 
                 # 결과 요약
-                counts = signal_days['Result'].value_counts()
-                total_signals = len(signal_days)
-                win_count = counts.get('Win', 0)
-                lose_count = counts.get('Lose', 0)
+                counts = signal_df['Result'].value_counts()
+                total_signals = len(signal_df)
+                win_count = counts.get('Win', 0)  # 상승한 경우
+                lose_count = counts.get('Lose', 0)  # 하락한 경우
                 winrate = (win_count / total_signals) if total_signals > 0 else 0
-                rate = winrate*100
+                rate = winrate * 100
                 
                 # Display main results
                 display_ticker = f"{company_name} ({processed_ticker})" if company_name else processed_ticker
-                st.success(f"✅ **{display_ticker}** 분석 완료! {total_signals}개의 하락 신호를 분석했습니다.")
+                st.success(f"✅ **{display_ticker}** 분석 완료! {total_signals}개의 하락을 분석했습니다.")
                 
                 # Main metrics
                 col1, col2, col3, col4 = st.columns(4)
@@ -649,39 +685,41 @@ def nday_analysis_tab():
                     st.metric("📊 총 신호", f"{total_signals}회")
                 
                 with col2:
-                    st.metric("📈 평균 하락률", f"{signal_days['Pct_Change'].mean():.2f}%")
+                    avg_drop = signal_df['total_drop_pct'].mean()
+                    st.metric(f"📉 평균 {analysis_days}일 하락률", f"{avg_drop:.2f}%")
                     
                 with col3:
-                    st.metric("📉 최대 하락률", f"{signal_days['Pct_Change'].min():.2f}%")
+                    max_drop = signal_df['total_drop_pct'].max()
+                    st.metric(f"📉 최대 {analysis_days}일 하락률", f"{max_drop:.2f}%")
                     
                 with col4:
-                    avg_nd_change = signal_days[f'Price_Change_{days_after}D'].mean()
+                    avg_nd_change = signal_df[f'Price_Change_{days_after}D'].mean()
                     st.metric(f"🔄 평균 {days_after}일 변화", f"{avg_nd_change:+.2f}%")
                 
                 st.markdown("---")
                 
                 # Win/Lose breakdown
-                st.subheader(f"🎯 {days_after}일 후 하락 여부 분석 결과")
+                st.subheader(f"🎯 {analysis_days}일 동안{drop_threshold}% 하락 후 {days_after}일 뒤 주가 분석")
                 
                 result_cols = st.columns(2)
                 
                 with result_cols[0]:
                     win_percentage = (win_count / total_signals) * 100
                     st.markdown(f"""
-                    <div class="result-box win-box">
-                        <h3>🔴 (즉시 매도가 유리)</h3>
+                    <div class="result-box lose-box">
+                        <h3>🟢 상승 (회복)</h3>
                         <h1>{win_count}회 ({win_percentage:.1f}%)</h1>
-                        <p>하락일에 즉시 매도했다면 {days_after}일 후보다 높은 가격에 판 것</p>
+                        <p>{analysis_days}일 동안{drop_threshold}% 하락 후 {days_after}일 뒤 주가가 회복된 경우</p>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 with result_cols[1]:
                     lose_percentage = (lose_count / total_signals) * 100
                     st.markdown(f"""
-                    <div class="result-box lose-box">
-                        <h3>🟢 (기다리는 것이 유리)</h3>
+                    <div class="result-box win-box">
+                        <h3>🔴 추가 하락</h3>
                         <h1>{lose_count}회 ({lose_percentage:.1f}%)</h1>
-                        <p>{days_after}일 후 가격이 하락일 보다 높음</p>
+                        <p>{analysis_days}일 동안{drop_threshold}% 하락 후 {days_after}일 뒤에도 추가 하락한 경우</p>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -691,64 +729,65 @@ def nday_analysis_tab():
                 
                 ticker_display = company_name if company_name else processed_ticker
                 
-                if winrate > 0.55:
-                    strategy_color = "win-box"
-                    strategy_text = f"""
-                    <h4>📉 즉시 매도 전략 추천</h4>
-                    <p><strong>{rate:.1f}%</strong>의 확률로 즉시 매도가 유리했습니다.</p>
-                    <p>💡 <strong>추천</strong>: {ticker_display} 종목이 {drop_threshold}% 이상 하락하면 매도를 고려하세요.</p>
-                    """
-                elif winrate < 0.45:
+                if winrate > 0.6:
                     strategy_color = "lose-box"
                     strategy_text = f"""
-                    <h4>⏰ 대기 전략 추천</h4>
-                    <p><strong>{(100-rate):.1f}%</strong>의 확률로 {days_after}일 기다리는 것이 유리했습니다.</p>
-                    <p>💡 <strong>추천</strong>: {ticker_display} 종목이 {drop_threshold}% 이상 하락해도 {days_after}일 정도는 기다려보세요.</p>
+                    <h4>📈 회복 대기 전략 추천</h4>
+                    <p><strong>{rate:.1f}%</strong>의 확률로 {days_after}일 후 주가가 회복되었습니다.</p>
+                    <p>💡 <strong>추천</strong>: {ticker_display}가 {analysis_days}일 동안 {drop_threshold}% 하락해도 {days_after}일 정도는 기다려보세요.</p>
+                    """
+                elif winrate < 0.4:
+                    strategy_color = "win-box"
+                    strategy_text = f"""
+                    <h4>📉 손절 전략 추천</h4>
+                    <p><strong>{(100-rate):.1f}%</strong>의 확률로 {days_after}일 후에도 추가 하락했습니다.</p>
+                    <p>💡 <strong>추천</strong>: {ticker_display}가 {analysis_days}일 동안 {drop_threshold}% 하락하면 빠른 손절을 고려하세요.</p>
                     """
                 else:
                     strategy_color = "result-box"
                     strategy_text = f"""
                     <h4>⚖️ 중립적 결과</h4>
-                    <p>즉시 매도와 대기 전략의 성공률이 비슷합니다 ({rate:.1f}% vs {(100-rate):.1f}%).</p>
+                    <p>회복과 추가하락 확률이 비슷합니다 ({rate:.1f}% vs {(100-rate):.1f}%).</p>
                     <p>💡 <strong>추천</strong>: 다른 지표와 함께 종합적으로 판단하세요.</p>
                     """
                 
                 st.markdown(f'<div class="{strategy_color}">{strategy_text}</div>', unsafe_allow_html=True)
                 
                 # Recent examples
-                if len(signal_days) > 0:
+                if len(signal_df) > 0:
                     st.markdown("---")
-                    st.subheader("📅 최근 하락 신호 사례 (최근 50개)")
+                    st.subheader("📅 최근 하락 사례 (최근 50개)")
                     
-                    recent_signals = signal_days.tail(50).sort_index(ascending=False).copy()          
+                    recent_signals = signal_df.tail(50).sort_index(ascending=False).copy()          
                     recent_signals.index = recent_signals.index.strftime('%Y-%m-%d')
                     
                     # Prepare display data
-                    display_data = recent_signals[['Pct_Change', 'Price_Today', f'Price_{days_after}D_Later', f'Price_Change_{days_after}D', 'Result']].copy()
+                    display_data = recent_signals[['start_date', 'total_drop_pct', 'end_price', f'Price_{days_after}D_Later', f'Price_Change_{days_after}D', 'Result']].copy()
+                    display_data['start_date'] = pd.to_datetime(display_data['start_date']).dt.strftime('%Y-%m-%d')
                     
                     # 가격 단위 조정 (한국 주식의 경우)
                     if company_name:
-                        display_data.columns = ['하락률(%)', '당일종가(₩)', f'{days_after}일후종가(₩)', f'{days_after}일간변화(%)', '결과']
+                        display_data.columns = ['시작일', f'{analysis_days}일하락률(%)', '마지막일종가(₩)', f'{days_after}일후종가(₩)', f'{days_after}일간변화(%)', '결과']
                         # 한국 주식은 원 단위로 표시 (소수점 제거)
-                        display_data['당일종가(₩)'] = display_data['당일종가(₩)'].round(0).astype(int)
+                        display_data['마지막일종가(₩)'] = display_data['마지막일종가(₩)'].round(0).astype(int)
                         display_data[f'{days_after}일후종가(₩)'] = display_data[f'{days_after}일후종가(₩)'].round(0).astype(int)
-                        display_data['하락률(%)'] = display_data['하락률(%)'].round(2)
+                        display_data[f'{analysis_days}일하락률(%)'] = display_data[f'{analysis_days}일하락률(%)'].round(2)
                         display_data[f'{days_after}일간변화(%)'] = display_data[f'{days_after}일간변화(%)'].round(2)
                     else:
-                        display_data.columns = ['하락률(%)', '당일종가($)', f'{days_after}일후종가($)', f'{days_after}일간변화(%)', '결과']
+                        display_data.columns = ['시작일', f'{analysis_days}일하락률(%)', '마지막일종가($)', f'{days_after}일후종가($)', f'{days_after}일간변화(%)', '결과']
                         display_data = display_data.round(2)
 
                     display_data['결과'] = display_data['결과'].map({
-                        'Win': f'{days_after}일 후 📉',
-                        'Lose': f'{days_after}일 후 📈'
+                        'Win': f'{days_after}일 후 📈',
+                        'Lose': f'{days_after}일 후 📉'
                     })
                     
                     # Color code the results
                     def color_result(val):
-                        if val == f'{days_after}일 후 📉':
-                            return 'background-color: #f8d7da; color: #721c24'
-                        elif val == f'{days_after}일 후 📈':
+                        if val == f'{days_after}일 후 📈':
                             return 'background-color: #d4edda; color: #155724'
+                        elif val == f'{days_after}일 후 📉':
+                            return 'background-color: #f8d7da; color: #721c24'
                         return ''
                     
                     def color_change(val):
@@ -770,26 +809,25 @@ def nday_analysis_tab():
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:
-                    avg_win_change = signal_days[signal_days['Result'] == 'Win'][f'Price_Change_{days_after}D'].mean()
-                    st.metric(f"하락 시 평균 {days_after}일 변화", f"{avg_win_change:+.2f}%" if not pd.isna(avg_win_change) else "N/A")
+                    avg_win_change = signal_df[signal_df['Result'] == 'Win'][f'Price_Change_{days_after}D'].mean()
+                    st.metric(f"회복 시 평균 {days_after}일 변화", f"{avg_win_change:+.2f}%" if not pd.isna(avg_win_change) else "N/A")
                 
                 with col2:
-                    avg_lose_change = signal_days[signal_days['Result'] == 'Lose'][f'Price_Change_{days_after}D'].mean()
-                    st.metric(f"상승 시 평균 {days_after}일 변화", f"{avg_lose_change:+.2f}%" if not pd.isna(avg_lose_change) else "N/A")
+                    avg_lose_change = signal_df[signal_df['Result'] == 'Lose'][f'Price_Change_{days_after}D'].mean()
+                    st.metric(f"추가하락 시 평균 {days_after}일 변화", f"{avg_lose_change:+.2f}%" if not pd.isna(avg_lose_change) else "N/A")
                 
                 with col3:
-                    median_change = signal_days[f'Price_Change_{days_after}D'].median()
+                    median_change = signal_df[f'Price_Change_{days_after}D'].median()
                     st.metric(f"{days_after}일 변화 중간값", f"{median_change:+.2f}%")
                 
                 # Information box
-                st.markdown("""
+                st.markdown(f"""
                 <div class="info-box">
                     <h4>⚠️ 주의사항</h4>
                     <ul>
-                        <li>이 분석은 과거 데이터를 바탕으로 한 통계적 분석입니다.</li>
+                        <li>이 분석은 과거 <strong>{analysis_days}일  하락</strong> 패턴을 바탕으로 한 통계적 분석입니다.</li>
                         <li>실제 투자 결정시에는 다른 기술적/기본적 분석과 함께 고려하세요.</li>
                         <li>시장 상황에 따라 과거 패턴이 반복되지 않을 수 있습니다.</li>
-                        <li>미국 주식의 경우 환율 변동 등 추가 요인을 고려해야 합니다.</li>
                     </ul>
                     <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #6c757d;">
                         💡 <strong>권장</strong>: 이 분석 결과를 다른 투자 지표와 함께 종합적으로 활용하세요.
@@ -815,7 +853,7 @@ def main():
     st.markdown('<h1 class="main-header">📈 주식 시장 분석 대시보드</h1>', unsafe_allow_html=True)
     
     # Create tabs
-    tab1, tab2 = st.tabs(["📊 시장 감정", "📉 N일 후 분석"])
+    tab1, tab2 = st.tabs(["📊 시장 감정", "📉 연속 하락 분석"])
     
     with tab1:
         market_sentiment_tab()
@@ -836,7 +874,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
 
