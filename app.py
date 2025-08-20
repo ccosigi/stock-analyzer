@@ -851,7 +851,7 @@ def main():
     st.markdown('<h1 class="main-header">📈 주식 시장 분석 대시보드</h1>', unsafe_allow_html=True)
     
     # Create tabs
-    tab1, tab2 = st.tabs(["📊 시장 감정", "📉 연속 하락 분석"])
+    tab1, tab2 = st.tabs(["📊 시장 감정", "📉 하락 분석"])
     
     with tab1:
         market_sentiment_tab()
@@ -872,6 +872,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
