@@ -19,7 +19,7 @@ except ImportError as e:
     print(f" stock_library.py 파일을 찾을 수 없습니다: {e}")
     
 
-# Page configuration
+
 st.set_page_config(
     page_title="주식 분석 대시보드", 
     layout="wide",
@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 
-# Custom CSS for mobile-friendly design
+
 st.markdown("""
 <style>
     .main-header {
@@ -172,7 +172,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Market data functions
+
 @st.cache_data(ttl=60)  # Cache for 1 minute
 def get_qqq_data():
     try:
@@ -273,7 +273,7 @@ def calculate_rsi(data, window=14):
     except:
         return None
 
-# Interpretation functions
+
 def interpret_fgi(fgi):
     if fgi is None:
         return "데이터 없음", "neutral"
@@ -385,11 +385,11 @@ def find_consecutive_drop_periods(data, analysis_days, drop_threshold):
         period_start = i - analysis_days
         period_end = i
         
-        # 기간의 시작가격과 종료가격
+      
         start_price = data.iloc[period_start]['Close']
         end_price = data.iloc[period_end]['Close']
         
-        # 총 하락률 계산
+    
         total_drop = ((start_price - end_price) / start_price) * 100
         
         if total_drop >= drop_threshold:
@@ -447,25 +447,25 @@ def market_sentiment_tab():
         except:
             rsi = None
 
-    # Display metrics in responsive columns (2x3 grid)
+    
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        # Fear & Greed Index
+        
         if fgi is not None:
             fgi_interp, fgi_sentiment = interpret_fgi(fgi)
             display_metric("😨 공포 & 탐욕 지수", f"{fgi}/100", fgi_interp, fgi_sentiment)
         else:
             display_metric("😨 공포 & 탐욕 지수", "N/A", "데이터 로딩 실패", "neutral")
         
-        # VIX
+        
         if vix is not None:
             vix_interp, vix_sentiment = interpret_vix(vix)
             display_metric("📈 VIX (변동성 지수)", f"{vix:.2f}", vix_interp, vix_sentiment)
         else:
             display_metric("📈 VIX (변동성 지수)", "로딩중...", "데이터 새로고침 중 (잠시 후 다시 시도)", "neutral")
         
-        # QQQ vs 200-day SMA
+       
         if qqq_price is not None and qqq_sma is not None:
             price_vs_sma = "bullish" if qqq_price > qqq_sma else "bearish"
             trend_text = "상승 추세" if qqq_price > qqq_sma else "하락 추세"
@@ -478,28 +478,28 @@ def market_sentiment_tab():
             display_metric("🚀 QQQ vs 200일 이동평균", "N/A", "데이터 로딩 실패", "neutral")
 
     with col2:
-        # Put/Call Ratio
+       
         if pci is not None:
             pci_interp, pci_sentiment = interpret_pci(pci)
             display_metric("⚖️ Put/Call 비율", f"{pci:.3f}", pci_interp, pci_sentiment)
         else:
             display_metric("⚖️ Put/Call 비율", "N/A", "데이터 로딩 실패", "neutral")
         
-        # RSI
+       
         if rsi is not None:
             rsi_interp, rsi_sentiment = interpret_rsi(rsi)
             display_metric("📊 RSI (S&P500)", f"{rsi:.1f}", rsi_interp, rsi_sentiment)
         else:
             display_metric("📊 RSI (S&P500)", "N/A", "데이터 로딩 실패", "neutral")
         
-        # USD/KRW 환율
+       
         if usd_krw_rate is not None:
             usd_krw_interp, usd_krw_sentiment = interpret_usd_krw(usd_krw_rate, usd_krw_change_amount, usd_krw_change_pct)
             display_metric("🔁 원달러 환율", f"₩{usd_krw_rate:.2f}", usd_krw_interp, usd_krw_sentiment)
         else:
             display_metric("🔁 원달러 환율", "N/A", "데이터 로딩 실패", "neutral")
 
-    # Information box
+    
     st.markdown("""
     <div class="info-box">
         <h4>📖 지표 설명</h4>
@@ -517,13 +517,13 @@ def market_sentiment_tab():
     </div>
     """, unsafe_allow_html=True)
     
-    # Auto refresh logic
+   
     if auto_refresh:
         import time
         time.sleep(60)
         st.rerun()
 
-# Tab 2: N-Day Drop Analysis
+
 def nday_analysis_tab():
     st.markdown('<div class="sub-header">📉 연속 하락 분석기</div>', unsafe_allow_html=True)
     
@@ -542,7 +542,7 @@ def nday_analysis_tab():
     </div>
     """, unsafe_allow_html=True)
     
-    # Input controls
+    
     col1, col2, col3, col4, col5 = st.columns([1.2, 1, 1, 1, 1])
     
     with col1:
@@ -584,7 +584,7 @@ def nday_analysis_tab():
             help="하락 마지막일로부터 며칠 후를 분석할지 선택"
         )
         
-        # 실제 값 가져오기
+        
         days_after = day_options[selected_label]
     
     with col5:
@@ -605,13 +605,13 @@ def nday_analysis_tab():
     if st.button("🔍 분석 실행", type="primary", use_container_width=True):
         with st.spinner("데이터를 불러오고 분석 중... 잠시만 기다려주세요."):
             try:
-                # Download data
+                
                 data = yf.download(processed_ticker, start=start_date)
                 
                 if data.empty:
                     st.error(f"❌ {processed_ticker} 데이터를 찾을 수 없습니다. 티커를 확인해주세요.")
                     
-                    # 한국 주식의 경우 추가 도움말 제공
+                    
                     if processed_ticker.endswith(".KS"):
                         st.info("""
                         💡 **한국 주식 입력 방법**:
@@ -621,7 +621,7 @@ def nday_analysis_tab():
                         """)
                     return
                 
-                # Process data
+               
                 if isinstance(data.columns, pd.MultiIndex):
                     data.columns = data.columns.droplevel(1)
                 
@@ -751,7 +751,7 @@ def nday_analysis_tab():
                 
                 st.markdown(f'<div class="{strategy_color}">{strategy_text}</div>', unsafe_allow_html=True)
                 
-                # Recent examples
+                
                 if len(signal_df) > 0:
                     st.markdown("---")
                     st.subheader("📅 최근 하락 사례 (최근 50개)")
@@ -759,7 +759,7 @@ def nday_analysis_tab():
                     recent_signals = signal_df.tail(50).sort_index(ascending=False).copy()          
                     recent_signals.index = recent_signals.index.strftime('%Y-%m-%d')
                     
-                    # Prepare display data
+                    
                     display_data = recent_signals[['start_date', 'total_drop_pct', 'end_price', f'Price_{days_after}D_Later', f'Price_Change_{days_after}D', 'Result']].copy()
                     display_data['start_date'] = pd.to_datetime(display_data['start_date']).dt.strftime('%Y-%m-%d')
                     
@@ -818,7 +818,7 @@ def nday_analysis_tab():
                     median_change = signal_df[f'Price_Change_{days_after}D'].median()
                     st.metric(f"{days_after}일 변화 중간값", f"{median_change:+.2f}%")
                 
-                # Information box
+                
                 st.markdown(f"""
                 <div class="info-box">
                     <h4>⚠️ 주의사항</h4>
@@ -846,7 +846,7 @@ def nday_analysis_tab():
                     - 분석 시작일을 더 최근으로 설정해보세요.
                     """)
 
-# Main App
+
 def main():
     st.markdown('<h1 class="main-header">📈 주식 시장 분석 대시보드</h1>', unsafe_allow_html=True)
     
@@ -859,7 +859,7 @@ def main():
     with tab2:
         nday_analysis_tab()
     
-    # Footer
+    
     st.markdown("---")
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     st.markdown(f"""
@@ -872,6 +872,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
