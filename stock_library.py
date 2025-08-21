@@ -1,4 +1,4 @@
-# korean_stocks.py
+
 
 
 
@@ -2720,18 +2720,18 @@ def get_stock_count():
 def get_all_sectors():
     return list(SECTORS.keys())
 
-# 버전 정보
+
 __version__ = "1.0.0"
 __author__ = "Stock Analysis Dashboard"
 __description__ = "한국 주식 티커 및 회사명 데이터베이스"
 
 if __name__ == "__main__":
-    # 테스트 코드
+   
     print(f"한국 주식 데이터베이스 v{__version__}")
     print(f"총 {get_stock_count()}개 종목 지원")
     print(f"지원 섹터: {', '.join(get_all_sectors())}")
     
-    # 테스트 검색
+   
     test_searches = ["삼성", "SK", "현대"]
     for keyword in test_searches:
         results = search_stocks(keyword)
@@ -2739,3 +2739,4 @@ if __name__ == "__main__":
         for ticker, name in results[:3]:  # 상위 3개만 표시
 
             print(f"  - {ticker}: {name}")
+
