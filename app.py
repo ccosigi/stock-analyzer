@@ -1163,7 +1163,7 @@ def sp500_screener_tab():
                     elif num_val < 30:
                         return 'background-color: #ffe6cc; font-weight: bold'  # 낮음 (주황색)
                     elif num_val < 35:
-                        return 'background-color: #ffffcc'  # 보통 (노란색)
+                        return 'background-color: #6f42c1'  # 보통 (노란색)
                 except:
                     pass
                 return ''
@@ -1176,7 +1176,7 @@ def sp500_screener_tab():
                     elif num_val < 0.35:
                         return 'background-color: #ffe6cc; font-weight: bold'  # 낮음
                     elif num_val < 0.5:
-                        return 'background-color: #ffffcc'  # 보통
+                        return 'background-color: #6f42c1'  # 보통
                 except:
                     pass
                 return ''
@@ -1325,4 +1325,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
