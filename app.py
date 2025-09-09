@@ -1158,32 +1158,32 @@ def sp500_screener_tab():
             results_df = pd.DataFrame(results_data)
             
          
-def highlight_good_rsi(val):
-    try:
-        num_val = float(val)
-        if num_val < 25:
-            return 'background-color: #dc3545; color: white; font-weight: bold'  
-        elif num_val < 30:
-            return 'background-color: #fd7e14; color: white; font-weight: bold'  
-        elif num_val < 35:
-            return 'background-color: #6f42c1; color: white' 
-    except:
-        pass
-    return ''
+    def highlight_good_rsi(val):
+        try:
+            num_val = float(val)
+            if num_val < 25:
+                return 'background-color: #dc3545; color: white; font-weight: bold'  
+            elif num_val < 30:
+                return 'background-color: #fd7e14; color: white; font-weight: bold'  
+            elif num_val < 35:
+                return 'background-color: #6f42c1; color: white' 
+        except:
+            pass
+        return ''
 
 
-def highlight_bb_position(val):
-    try:
-        num_val = float(val)
-        if num_val < 0.2:
-            return 'background-color: #dc3545; color: white; font-weight: bold'  
-        elif num_val < 0.35:
-            return 'background-color: #fd7e14; color: white; font-weight: bold'
-        elif num_val < 0.5:
-            return 'background-color: #6f42c1; color: white'
-    except:
-        pass
-    return ''
+    def highlight_bb_position(val):
+        try:
+            num_val = float(val)
+            if num_val < 0.2:
+                return 'background-color: #dc3545; color: white; font-weight: bold'  
+            elif num_val < 0.35:
+                return 'background-color: #fd7e14; color: white; font-weight: bold'
+            elif num_val < 0.5:
+                return 'background-color: #6f42c1; color: white'
+        except:
+            pass
+        return ''
             
            
             styled_df = results_df.style.applymap(highlight_good_rsi, subset=['RSI']) \
@@ -1329,6 +1329,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
