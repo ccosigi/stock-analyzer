@@ -1158,7 +1158,7 @@ def sp500_screener_tab():
             results_df = pd.DataFrame(results_data)
             
          
-            def highlight_good_rsi(val):
+def highlight_good_rsi(val):
     try:
         num_val = float(val)
         if num_val < 25:
@@ -1329,6 +1329,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
