@@ -1028,7 +1028,7 @@ def nday_analysis_tab():
 
 
 def sp500_screener_tab():
-    st.markdown('<div class="sub-header">🎯 S&P500 기술적 스크리너</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">🎯 S&P500 rsi 검색기</div>', unsafe_allow_html=True)
     
     st.markdown("""
     <div class="info-box">
@@ -1328,3 +1328,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
