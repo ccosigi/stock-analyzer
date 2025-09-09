@@ -1159,30 +1159,31 @@ def sp500_screener_tab():
             
          
             def highlight_good_rsi(val):
-                try:
-                    num_val = float(val)
-                    if num_val < 25:
-                        return 'background-color: #ffcccc; font-weight: bold'  # 매우 낮음 (빨간색)
-                    elif num_val < 30:
-                        return 'background-color: #ffe6cc; font-weight: bold'  # 낮음 (주황색)
-                    elif num_val < 35:
-                        return 'background-color: #ffffcc'  # 보통 (노란색)
-                except:
-                    pass
-                return ''
-            
-            def highlight_bb_position(val):
-                try:
-                    num_val = float(val)
-                    if num_val < 0.2:
-                        return 'background-color: #ffcccc; font-weight: bold'  # 매우 낮음
-                    elif num_val < 0.35:
-                        return 'background-color: #ffe6cc; font-weight: bold'  # 낮음
-                    elif num_val < 0.5:
-                        return 'background-color: #ffffcc'  # 보통
-                except:
-                    pass
-                return ''
+    try:
+        num_val = float(val)
+        if num_val < 25:
+            return 'background-color: #dc3545; color: white; font-weight: bold'  
+        elif num_val < 30:
+            return 'background-color: #fd7e14; color: white; font-weight: bold'  
+        elif num_val < 35:
+            return 'background-color: #6f42c1; color: white' 
+    except:
+        pass
+    return ''
+
+
+def highlight_bb_position(val):
+    try:
+        num_val = float(val)
+        if num_val < 0.2:
+            return 'background-color: #dc3545; color: white; font-weight: bold'  
+        elif num_val < 0.35:
+            return 'background-color: #fd7e14; color: white; font-weight: bold'
+        elif num_val < 0.5:
+            return 'background-color: #6f42c1; color: white'
+    except:
+        pass
+    return ''
             
            
             styled_df = results_df.style.applymap(highlight_good_rsi, subset=['RSI']) \
@@ -1328,5 +1329,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
