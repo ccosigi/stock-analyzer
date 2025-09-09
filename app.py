@@ -1159,11 +1159,11 @@ def sp500_screener_tab():
                 try:
                     num_val = float(val)
                     if num_val < 25:
-                        return 'background-color: #ffcccc; font-weight: bold'  # 매우 낮음 (빨간색)
+                        return 'background-color: #dc3545; font-weight: bold'  
                     elif num_val < 30:
-                        return 'background-color: #ffe6cc; font-weight: bold'  # 낮음 (주황색)
+                        return 'background-color: #fd7e14; font-weight: bold' 
                     elif num_val < 35:
-                        return 'background-color: #6f42c1'  # 보통 (노란색)
+                        return 'background-color: #198754'  
                 except:
                     pass
                 return ''
@@ -1172,11 +1172,11 @@ def sp500_screener_tab():
                 try:
                     num_val = float(val)
                     if num_val < 0.2:
-                        return 'background-color: #ffcccc; font-weight: bold'  # 매우 낮음
+                        return 'background-color: #dc3545; font-weight: bold'  
                     elif num_val < 0.35:
-                        return 'background-color: #ffe6cc; font-weight: bold'  # 낮음
+                        return 'background-color: #fd7e14; font-weight: bold'  
                     elif num_val < 0.5:
-                        return 'background-color: #6f42c1'  # 보통
+                        return 'background-color: #198754'  
                 except:
                     pass
                 return ''
@@ -1325,5 +1325,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
