@@ -1,6 +1,550 @@
 
+SP500_STOCKS = {
+    "MMM": "3M Company",
+    "AOS": "A.O. Smith Corporation",
+    "ABT": "Abbott Laboratories",
+    "ABBV": "AbbVie Inc.",
+    "ACN": "Accenture plc",
+    "ADBE": "Adobe Inc.",
+    "AMD": "Advanced Micro Devices, Inc.",
+    "AES": "The AES Corporation",
+    "AFL": "A flop Corporation",
+    "A": "Agilent Technologies, Inc.",
+    "APD": "Air Products and Chemicals, Inc.",
+    "ABNB": "Airbnb, Inc.",
+    "AKAM": "Akamai Technologies, Inc.",
+    "ALB": "Albemarle Corporation",
+    "ARE": "Alexandria Real Estate Equities, Inc.",
+    "ALGN": "Align Technology, Inc.",
+    "ALLE": "Allegion plc",
+    "LNT": "Alliant Energy Corporation",
+    "ALL": "The Allstate Corporation",
+    "GOOGL": "Alphabet Inc. Class A",
+    "GOOG": "Alphabet Inc. Class C",
+    "MO": "Altria Group, Inc.",
+    "AMZN": "Amazon.com, Inc.",
+    "AMCR": "Amcor plc",
+    "AEE": "Ameren Corporation",
+    "AAL": "American Airlines Group Inc.",
+    "AEP": "American Electric Power Company, Inc.",
+    "AXP": "American Express Company",
+    "AIG": "American International Group, Inc.",
+    "AMT": "American Tower Corporation",
+    "AWK": "American Water Works Company, Inc.",
+    "AMP": "Ameriprise Financial, Inc.",
+    "AME": "AMETEK, Inc.",
+    "AMGN": "Amgen Inc.",
+    "APH": "Amphenol Corporation",
+    "ADI": "Analog Devices, Inc.",
+    "ANSS": "ANSYS, Inc.",
+    "AON": "Aon plc",
+    "APA": "APA Corporation",
+    "AAPL": "Apple Inc.",
+    "AMAT": "Applied Materials, Inc.",
+    "APTV": "Aptiv PLC",
+    "ACGL": "Arch Capital Group Ltd.",
+    "ADM": "Archer-Daniels-Midland Company",
+    "ANET": "Arista Networks, Inc.",
+    "AJG": "Arthur J. Gallagher & Co.",
+    "AIZ": "Assurant, Inc.",
+    "T": "AT&T Inc.",
+    "ATO": "Atmos Energy Corporation",
+    "ADSK": "Autodesk, Inc.",
+    "ADP": "Automatic Data Processing, Inc.",
+    "AZO": "AutoZone, Inc.",
+    "AVB": "AvalonBay Communities, Inc.",
+    "AVY": "Avery Dennison Corporation",
+    "AXON": "Axon Enterprise, Inc.",
+    "BKR": "Baker Hughes Company",
+    "BALL": "Ball Corporation",
+    "BAC": "Bank of America Corporation",
+    "BK": "The Bank of New York Mellon Corporation",
+    "BBWI": "Bath & Body Works, Inc.",
+    "BAX": "Baxter International Inc.",
+    "BDX": "Becton, Dickinson and Company",
+    "BBY": "Best Buy Co., Inc.",
+    "BIO": "Bio-Rad Laboratories, Inc.",
+    "TECH": "Bio-Techne Corporation",
+    "BIIB": "Biogen Inc.",
+    "BLK": "BlackRock, Inc.",
+    "BX": "Blackstone Inc.",
+    "BA": "The Boeing Company",
+    "BKNG": "Booking Holdings Inc.",
+    "BWA": "BorgWarner Inc.",
+    "BSX": "Boston Scientific Corporation",
+    "BMY": "Bristol-Myers Squibb Company",
+    "AVGO": "Broadcom Inc.",
+    "BR": "Broadridge Financial Solutions, Inc.",
+    "BRO": "Brown & Brown, Inc.",
+    "BF.B": "Brown-Forman Corporation Class B",
+    "BLDR": "Builders FirstSource, Inc.",
+    "BG": "Bunge Global SA",
+    "BXP": "BXP, Inc.",
+    "CDNS": "Cadence Design Systems, Inc.",
+    "CZR": "Caesars Entertainment, Inc.",
+    "CPT": "Camden Property Trust",
+    "CPB": "Campbell Soup Company",
+    "COF": "Capital One Financial Corporation",
+    "CAH": "Cardinal Health, Inc.",
+    "KMX": "CarMax, Inc.",
+    "CCL": "Carnival Corporation & plc",
+    "CARR": "Carrier Global Corporation",
+    "CTLT": "Catalent, Inc.",
+    "CAT": "Caterpillar Inc.",
+    "CBOE": "Cboe Global Markets, Inc.",
+    "CBRE": "CBRE Group, Inc.",
+    "CDW": "CDW Corporation",
+    "CE": "Celanese Corporation",
+    "COR": "Cencora, Inc.",
+    "CNC": "Centene Corporation",
+    "CNP": "CenterPoint Energy, Inc.",
+    "CF": "CF Industries Holdings, Inc.",
+    "CHRW": "C.H. Robinson Worldwide, Inc.",
+    "CRL": "Charles River Laboratories International, Inc.",
+    "SCHW": "The Charles Schwab Corporation",
+    "CHTR": "Charterra Communications Inc.",
+    "CVX": "Chevron Corporation",
+    "CMG": "Chipotle Mexican Grill, Inc.",
+    "CB": "Chubb Limited",
+    "CHD": "Church & Dwight Co., Inc.",
+    "CI": "Cigna Group",
+    "CINF": "Cincinnati Financial Corporation",
+    "CTAS": "Cintas Corporation",
+    "CSCO": "Cisco Systems, Inc.",
+    "C": "Citigroup Inc.",
+    "CFG": "Citizens Financial Group, Inc.",
+    "CLX": "The Clorox Company",
+    "CME": "CME Group Inc.",
+    "CMS": "CMS Energy Corporation",
+    "KO": "The Coca-Cola Company",
+    "CTSH": "Cognizant Technology Solutions Corporation",
+    "CL": "Colgate-Palmolive Company",
+    "CMCSA": "Comcast Corporation Class A",
+    "CAG": "Conagra Brands, Inc.",
+    "COP": "ConocoPhillips",
+    "ED": "Consolidated Edison, Inc.",
+    "STZ": "Constellation Brands, Inc. Class A",
+    "CEG": "Constellation Energy Corporation",
+    "COO": "The Cooper Companies, Inc.",
+    "CPRT": "Copart, Inc.",
+    "GLW": "Corning Incorporated",
+    "CPAY": "Corpay, Inc.",
+    "COST": "Costco Wholesale Corporation",
+    "CTRA": "Coterra Energy Inc.",
+    "CRWD": "CrowdStrike Holdings, Inc. Class A",
+    "CCI": "Crown Castle Inc.",
+    "CSX": "CSX Corporation",
+    "CMI": "Cummins Inc.",
+    "CVS": "CVS Health Corporation",
+    "DHR": "Danaher Corporation",
+    "DRI": "Darden Restaurants, Inc.",
+    "DVA": "DaVita Inc.",
+    "DAY": "Dayforce, Inc.",
+    "DECK": "Deckers Outdoor Corporation",
+    "DE": "Deere & Company",
+    "DAL": "Delta Air Lines, Inc.",
+    "DVN": "Devon Energy Corporation",
+    "DXCM": "DexCom, Inc.",
+    "FANG": "Diamondback Energy, Inc.",
+    "DLR": "Digital Realty Trust, Inc.",
+    "DFS": "Discover Financial Services",
+    "DG": "Dollar General Corporation",
+    "DLTR": "Dollar Tree, Inc.",
+    "D": "Dominion Energy, Inc.",
+    "DPZ": "Domino's Pizza, Inc.",
+    "DOV": "Dover Corporation",
+    "DOW": "Dow Inc.",
+    "DTE": "DTE Energy Company",
+    "DUK": "Duke Energy Corporation",
+    "DD": "DuPont de Nemours, Inc.",
+    "EMN": "Eastman Chemical Company",
+    "ETN": "Eaton Corporation plc",
+    "EBAY": "eBay Inc.",
+    "ECL": "Ecolab Inc.",
+    "EIX": "Edison International",
+    "EW": "Edwards Lifesciences Corporation",
+    "EA": "Electronic Arts Inc.",
+    "ELV": "Elevance Health, Inc.",
+    "LLY": "Eli Lilly and Company",
+    "EMR": "Emerson Electric Co.",
+    "ENPH": "Enphase Energy, Inc.",
+    "ETR": "Entergy Corporation",
+    "EOG": "EOG Resources, Inc.",
+    "EPAM": "EPAM Systems, Inc.",
+    "EQT": "EQT Corporation",
+    "EFX": "Equifax Inc.",
+    "EQIX": "Equinix, Inc.",
+    "EQR": "Equity Residential",
+    "ESS": "Essex Property Trust, Inc.",
+    "EL": "The Estee Lauder Companies Inc.",
+    "ETSY": "Etsy, Inc.",
+    "EG": "Everest Group, Ltd.",
+    "EVRG": "Evergy, Inc.",
+    "ES": "Eversource Energy",
+    "EXC": "Exelon Corporation",
+    "EXPE": "Expedia Group, Inc.",
+    "EXPD": "Expeditors International of Washington, Inc.",
+    "EXR": "Extra Space Storage Inc.",
+    "XOM": "Exxon Mobil Corporation",
+    "FFIV": "F5, Inc.",
+    "FDS": "FactSet Research Systems Inc.",
+    "FICO": "Fair Isaac Corporation",
+    "FAST": "Fastenal Company",
+    "FRT": "Federal Realty Investment Trust",
+    "FDX": "FedEx Corporation",
+    "FIS": "Fidelity National Information Services, Inc.",
+    "FITB": "Fifth Third Bancorp",
+    "FSLR": "First Solar, Inc.",
+    "FE": "FirstEnergy Corp.",
+    "FI": "Fiserv, Inc.",
+    "FMC": "FMC Corporation",
+    "F": "Ford Motor Company",
+    "FTNT": "Fortinet, Inc.",
+    "FTV": "Fortive Corporation",
+    "FOXA": "Fox Corporation Class A",
+    "FOX": "Fox Corporation Class B",
+    "BEN": "Franklin Resources, Inc.",
+    "FCX": "Freeport-McMoRan Inc.",
+    "GRMN": "Garmin Ltd.",
+    "IT": "Gartner, Inc.",
+    "GE": "GE Aerospace",
+    "GEHC": "GE HealthCare Technologies Inc.",
+    "GEV": "GE Vernova Inc.",
+    "GEN": "Gen Digital Inc.",
+    "GNRC": "Generac Holdings Inc.",
+    "GD": "General Dynamics Corporation",
+    "GIS": "General Mills, Inc.",
+    "GM": "General Motors Company",
+    "GPC": "Genuine Parts Company",
+    "GILD": "Gilead Sciences, Inc.",
+    "GPN": "Global Payments Inc.",
+    "GL": "Globe Life Inc.",
+    "GS": "The Goldman Sachs Group, Inc.",
+    "HAL": "Halliburton Company",
+    "HIG": "The Hartford Financial Services Group, Inc.",
+    "HAS": "Hasbro, Inc.",
+    "HCA": "HCA Healthcare, Inc.",
+    "DOC": "Healthpeak Properties, Inc.",
+    "HSIC": "Henry Schein, Inc.",
+    "HSY": "The Hershey Company",
+    "HES": "Hess Corporation",
+    "HPE": "Hewlett Packard Enterprise Company",
+    "HLT": "Hilton Worldwide Holdings Inc.",
+    "HOLX": "Hologic, Inc.",
+    "HD": "The Home Depot, Inc.",
+    "HON": "Honeywell International Inc.",
+    "HRL": "Hormel Foods Corporation",
+    "HST": "Host Hotels & Resorts, Inc.",
+    "HWM": "Howmet Aerospace Inc.",
+    "HPQ": "HP Inc.",
+    "HUBB": "Hubbell Incorporated",
+    "HUM": "Humana Inc.",
+    "HBAN": "Huntington Bancshares Incorporated",
+    "HII": "Huntington Ingalls Industries, Inc.",
+    "IBM": "International Business Machines Corporation",
+    "IEX": "IDEX Corporation",
+    "IDXX": "IDEXX Laboratories, Inc.",
+    "ITW": "Illinois Tool Works Inc.",
+    "ILMN": "Illumina, Inc.",
+    "INCY": "Incyte Corporation",
+    "IR": "Ingersoll Rand Inc.",
+    "PODD": "Insulet Corporation",
+    "INTC": "Intel Corporation",
+    "ICE": "Intercontinental Exchange, Inc.",
+    "IFF": "International Flavors & Fragrances Inc.",
+    "IP": "International Paper Company",
+    "IPG": "The Interpublic Group of Companies, Inc.",
+    "INTU": "Intuit Inc.",
+    "ISRG": "Intuitive Surgical, Inc.",
+    "INVH": "Invitation Homes Inc.",
+    "IQV": "IQVIA Holdings Inc.",
+    "IRM": "Iron Mountain Incorporated",
+    "JBHT": "J.B. Hunt Transport Services, Inc.",
+    "J": "Jacobs Solutions Inc.",
+    "JKHY": "Jack Henry & Associates, Inc.",
+    "JNJ": "Johnson & Johnson",
+    "JCI": "Johnson Controls International plc",
+    "JPM": "JPMorgan Chase & Co.",
+    "JNPR": "Juniper Networks, Inc.",
+    "K": "Kellanova",
+    "KVUE": "Kenvue Inc.",
+    "KDP": "Keurig Dr Pepper Inc.",
+    "KEY": "KeyCorp",
+    "KEYS": "Keysight Technologies, Inc.",
+    "KMB": "Kimberly-Clark Corporation",
+    "KIM": "Kimco Realty Corporation",
+    "KMI": "Kinder Morgan, Inc.",
+    "KLAC": "KLA Corporation",
+    "KHC": "The Kraft Heinz Company",
+    "KR": "The Kroger Co.",
+    "LHX": "L3Harris Technologies, Inc.",
+    "LH": "Labcorp Holdings Inc.",
+    "LRCX": "Lam Research Corporation",
+    "LW": "Lamb Weston Holdings, Inc.",
+    "LVS": "Las Vegas Sands Corp.",
+    "LDOS": "Leidos Holdings, Inc.",
+    "LEN": "Lennar Corporation",
+    "LIN": "Linde plc",
+    "LYV": "Live Nation Entertainment, Inc.",
+    "LKQ": "LKQ Corporation",
+    "LMT": "Lockheed Martin Corporation",
+    "L": "Loews Corporation",
+    "LOW": "Lowe's Companies, Inc.",
+    "LULU": "Lululemon Athletica Inc.",
+    "LYB": "LyondellBasell Industries N.V.",
+    "MTB": "M&T Bank Corporation",
+    "MRO": "Marathon Oil Corporation",
+    "MPC": "Marathon Petroleum Corporation",
+    "MKTX": "MarketAxess Holdings Inc.",
+    "MAR": "Marriott International, Inc.",
+    "MMC": "Marsh & McLennan Companies, Inc.",
+    "MLM": "Martin Marietta Materials, Inc.",
+    "MAS": "Masco Corporation",
+    "MA": "Mastercard Incorporated Class A",
+    "MTCH": "Match Group, Inc.",
+    "MKC": "McCormick & Company, Incorporated",
+    "MCD": "McDonald's Corporation",
+    "MCK": "McKesson Corporation",
+    "MDT": "Medtronic plc",
+    "MRK": "Merck & Co., Inc.",
+    "META": "Meta Platforms, Inc. Class A",
+    "MET": "MetLife, Inc.",
+    "MTD": "Mettler-Toledo International Inc.",
+    "MGM": "MGM Resorts International",
+    "MCHP": "Microchip Technology Incorporated",
+    "MU": "Micron Technology, Inc.",
+    "MSFT": "Microsoft Corporation",
+    "MAA": "Mid-America Apartment Communities, Inc.",
+    "MRNA": "Moderna, Inc.",
+    "MHK": "Mohawk Industries, Inc.",
+    "MOH": "Molina Healthcare, Inc.",
+    "TAP": "Molson Coors Beverage Company Class B",
+    "MDLZ": "Mondelez International, Inc.",
+    "MPWR": "Monolithic Power Systems, Inc.",
+    "MNST": "Monster Beverage Corporation",
+    "MCO": "Moody's Corporation",
+    "MS": "Morgan Stanley",
+    "MOS": "The Mosaic Company",
+    "MSI": "Motorola Solutions, Inc.",
+    "MSCI": "MSCI Inc.",
+    "NDAQ": "Nasdaq, Inc.",
+    "NTAP": "NetApp, Inc.",
+    "NFLX": "Netflix, Inc.",
+    "NEM": "Newmont Corporation",
+    "NWSA": "News Corporation Class A",
+    "NWS": "News Corporation Class B",
+    "NEE": "NextEra Energy, Inc.",
+    "NKE": "NIKE, Inc. Class B",
+    "NI": "NiSource Inc.",
+    "NDSN": "Nordson Corporation",
+    "NSC": "Norfolk Southern Corporation",
+    "NTRS": "Northern Trust Corporation",
+    "NOC": "Northrop Grumman Corporation",
+    "NCLH": "Norwegian Cruise Line Holdings Ltd.",
+    "NRG": "NRG Energy, Inc.",
+    "NUE": "Nucor Corporation",
+    "NVDA": "NVIDIA Corporation",
+    "NVR": "NVR, Inc.",
+    "NXPI": "NXP Semiconductors N.V.",
+    "ORLY": "O'Reilly Automotive, Inc.",
+    "OXY": "Occidental Petroleum Corporation",
+    "ODFL": "Old Dominion Freight Line, Inc.",
+    "OMC": "Omnicom Group Inc.",
+    "ON": "ON Semiconductor Corporation",
+    "OKE": "ONEOK, Inc.",
+    "ORCL": "Oracle Corporation",
+    "OTIS": "Otis Worldwide Corporation",
+    "PCAR": "PACCAR Inc.",
+    "PKG": "Packaging Corporation of America",
+    "PANW": "Palo Alto Networks, Inc.",
+    "PARA": "Paramount Global Class B",
+    "PH": "Parker-Hannifin Corporation",
+    "PAYX": "Paychex, Inc.",
+    "PAYC": "Paycom Software, Inc.",
+    "PYPL": "PayPal Holdings, Inc.",
+    "PNR": "Pentair plc",
+    "PEP": "PepsiCo, Inc.",
+    "PFE": "Pfizer Inc.",
+    "PCG": "PG&E Corporation",
+    "PM": "Philip Morris International Inc.",
+    "PSX": "Phillips 66",
+    "PNW": "Pinnacle West Capital Corporation",
+    "PNC": "The PNC Financial Services Group, Inc.",
+    "POOL": "Pool Corporation",
+    "PPG": "PPG Industries, Inc.",
+    "PPL": "PPL Corporation",
+    "PFG": "Principal Financial Group, Inc.",
+    "PG": "The Procter & Gamble Company",
+    "PGR": "The Progressive Corporation",
+    "PLD": "Prologis, Inc.",
+    "PRU": "Prudential Financial, Inc.",
+    "PEG": "Public Service Enterprise Group Incorporated",
+    "PTC": "PTC Inc.",
+    "PSA": "Public Storage",
+    "PHM": "PulteGroup, Inc.",
+    "QCOM": "QUALCOMM Incorporated",
+    "PWR": "Quanta Services, Inc.",
+    "QRVO": "Qorvo, Inc.",
+    "RJF": "Raymond James Financial, Inc.",
+    "RTX": "RTX Corporation",
+    "O": "Realty Income Corporation",
+    "REG": "Regency Centers Corporation",
+    "REGN": "Regeneron Pharmaceuticals, Inc.",
+    "RF": "Regions Financial Corporation",
+    "RSG": "Republic Services, Inc.",
+    "RMD": "ResMed Inc.",
+    "RVTY": "Revvity, Inc.",
+    "ROK": "Rockwell Automation, Inc.",
+    "ROL": "Rollins, Inc.",
+    "ROP": "Roper Technologies, Inc.",
+    "ROST": "Ross Stores, Inc.",
+    "RCL": "Superscript Caribbean Cruises Ltd.",
+    "SPGI": "S&P Global Inc.",
+    "CRM": "Salesforce, Inc.",
+    "SBAC": "SBA Communications Corporation",
+    "SLB": "Schlumberger Limited",
+    "STX": "Seagate Technology Holdings plc",
+    "SRE": "Sempra",
+    "NOW": "ServiceNow, Inc.",
+    "SHW": "The Sherwin-Williams Company",
+    "SMCI": "Super Micro Computer, Inc.",
+    "SNA": "Snap-on Incorporated",
+    "SOLV": "Solventum Corporation",
+    "SO": "The Southern Company",
+    "LUV": "Southwest Airlines Co.",
+    "SWK": "Stanley Black & Decker, Inc.",
+    "SBUX": "Starbucks Corporation",
+    "STT": "State Street Corporation",
+    "STLD": "Steel Dynamics, Inc.",
+    "STE": "STERIS plc",
+    "SYK": "Stryker Corporation",
+    "SMCI": "Super Micro Computer, Inc.",
+    "SYF": "Synchrony Financial",
+    "SNPS": "Synopsys, Inc.",
+    "SYY": "Sysco Corporation",
+    "TMUS": "T-Mobile US, Inc.",
+    "TROW": "T. Rowe Price Group, Inc.",
+    "TTWO": "Take-Two Interactive Software, Inc.",
+    "TPR": "Tapestry, Inc.",
+    "TRGP": "Targa Resources Corp.",
+    "TGT": "Target Corporation",
+    "TEL": "TE Connectivity Ltd.",
+    "TDY": "Teledyne Technologies Incorporated",
+    "TFX": "Teleflex Incorporated",
+    "TER": "Teradyne, Inc.",
+    "TSLA": "Tesla, Inc.",
+    "TXN": "Texas Instruments Incorporated",
+    "TXT": "Textron Inc.",
+    "TMO": "Thermo Fisher Scientific Inc.",
+    "TJX": "The TJX Companies, Inc.",
+    "TSCO": "Tractor Supply Company",
+    "TT": "Trane Technologies plc",
+    "TDG": "TransDigm Group Incorporated",
+    "TRV": "The Travelers Companies, Inc.",
+    "TRMB": "Trimble Inc.",
+    "TFC": "Truist Financial Corporation",
+    "TYL": "Tyler Technologies, Inc.",
+    "TSN": "Tyson Foods, Inc. Class A",
+    "USB": "U.S. Bancorp",
+    "UBER": "Uber Technologies, Inc.",
+    "UDR": "UDR, Inc.",
+    "ULTA": "Ulta Beauty, Inc.",
+    "UNP": "Union Pacific Corporation",
+    "UAL": "United Airlines Holdings, Inc.",
+    "UPS": "United Parcel Service, Inc. Class B",
+    "URI": "United Rentals, Inc.",
+    "UNH": "UnitedHealth Group Incorporated",
+    "UHS": "Universal Health Services, Inc.",
+    "VLO": "Valero Energy Corporation",
+    "VTR": "Ventas, Inc.",
+    "VRSN": "VeriSign, Inc.",
+    "VRSK": "Verisk Analytics, Inc.",
+    "VZ": "Verizon Communications Inc.",
+    "VRTX": "Vertex Pharmaceuticals Incorporated",
+    "VTRS": "Viatris Inc.",
+    "VICI": "VICI Properties Inc.",
+    "V": "Visa Inc. Class A",
+    "VST": "Vistra Corp.",
+    "VMC": "Vulcan Materials Company",
+    "WRB": "W.R. Berkley Corporation",
+    "GWW": "W.W. Grainger, Inc.",
+    "WAB": "Wabtec Corporation",
+    "WBA": "Walgreens Boots Alliance, Inc.",
+    "WMT": "Walmart Inc.",
+    "DIS": "The Walt Disney Company",
+    "WBD": "Warner Bros. Discovery, Inc.",
+    "WM": "Waste Management, Inc.",
+    "WAT": "Waters Corporation",
+    "WEC": "WEC Energy Group, Inc.",
+    "WFC": "Wells Fargo & Company",
+    "WELL": "Welltower Inc.",
+    "WST": "West Pharmaceutical Services, Inc.",
+    "WDC": "Western Digital Corporation",
+    "WRK": "WestRock Company",
+    "WY": "Weyerhaeuser Company",
+    "WHR": "Whirlpool Corporation",
+    "WMB": "The Williams Companies, Inc.",
+    "WTW": "Willis Towers Watson Public Limited Company",
+    "WYNN": "Wynn Resorts, Limited",
+    "XEL": "Xcel Energy Inc.",
+    "XYL": "Xylem Inc.",
+    "YUM": "Yum! Brands, Inc.",
+    "ZBRA": "Zebra Technologies Corporation",
+    "ZBH": "Zimmer Biomet Holdings, Inc.",
+    "ZTS": "Zoetis Inc.",
+    "IBKR": "Interactive Brokers Group, Inc.",
+    "TTD": "The Trade Desk, Inc. Class A",
+    "XYZ": "Block, Inc.",
+    "COIN": "Coinbase Global, Inc."
+}
 
+def get_sp500_tickers():
 
+    return list(SP500_STOCKS.keys())
+
+def get_sp500_company_name(ticker):
+    
+    return SP500_STOCKS.get(ticker, "Unknown")
+
+def get_sp500_stocks_by_sector(sector):
+   
+    return SP500_SECTORS.get(sector, [])
+
+def search_sp500_stocks(keyword):
+   
+    results = []
+    keyword = keyword.upper()
+    
+    for ticker, name in SP500_STOCKS.items():
+        if keyword in ticker or keyword.upper() in name.upper():
+            results.append((ticker, name))
+    
+    return results
+
+def get_all_sp500_sectors():
+    
+    return list(SP500_SECTORS.keys())
+
+def get_sp500_stock_count():
+ 
+    return len(SP500_STOCKS)
+
+__version__ = "1.0.0"
+__author__ = "Stock Analysis Dashboard"
+__description__ = "S&P 500 주식 티커 및 회사명 데이터베이스"
+
+if __name__ == "__main__":
+    print(f"S&P 500 데이터베이스 v{__version__}")
+    print(f"총 {get_sp500_stock_count()}개 종목 지원")
+    print(f"지원 섹터: {', '.join(get_all_sp500_sectors())}")
+    
+   
+    test_searches = ["APPLE", "MICROSOFT", "TESLA"]
+    for keyword in test_searches:
+        results = search_sp500_stocks(keyword)
+        print(f"\n'{keyword}' 검색 결과: {len(results)}개")
+        for ticker, name in results[:3]:
+            print(f"  - {ticker}: {name}")
 
 KOREAN_STOCKS = {
     "000020": "동화약품",
@@ -2650,15 +3194,18 @@ SECTORS = {
 }
 
 def get_company_name(ticker):
+    
     return KOREAN_STOCKS.get(ticker, "Unknown")
 
 def get_ticker_by_name(company_name):
+   
     for ticker, name in KOREAN_STOCKS.items():
         if name == company_name:
             return ticker
     return None
 
 def search_company_by_partial_name(partial_name):
+    
     matches = []
     for ticker, name in KOREAN_STOCKS.items():
         if partial_name in name:
@@ -2666,9 +3213,11 @@ def search_company_by_partial_name(partial_name):
     return matches
 
 def get_sector_stocks(sector):
+   
     return SECTORS.get(sector, [])
 
 def search_stocks(keyword):
+  
     results = []
     for ticker, name in KOREAN_STOCKS.items():
         if keyword in name:
@@ -2676,32 +3225,40 @@ def search_stocks(keyword):
     return results
 
 def get_ticker_from_name(input_text):
+    
     input_text = input_text.strip()
+    
     
     exact_ticker = get_ticker_by_name(input_text)
     if exact_ticker:
         return exact_ticker + ".KS"
+    
     
     matches = search_company_by_partial_name(input_text)
     
     if len(matches) == 1:
         return matches[0][0] + ".KS"
     elif len(matches) > 1:
+        
         return None
     
     return None
 
 def process_ticker_input(user_input):
+   
     user_input = user_input.strip().upper()
     
+
     ticker_from_name = get_ticker_from_name(user_input)
     if ticker_from_name:
         return ticker_from_name, KOREAN_STOCKS[ticker_from_name.replace(".KS", "")]
     
+  
     if user_input.isdigit() and len(user_input) == 6:
         korean_ticker = user_input + ".KS"
         company_name = KOREAN_STOCKS.get(user_input, "알 수 없는 회사")
         return korean_ticker, company_name
+    
     
     if user_input.endswith(".KS"):
         base_code = user_input.replace(".KS", "")
@@ -2709,15 +3266,19 @@ def process_ticker_input(user_input):
             company_name = KOREAN_STOCKS.get(base_code, "알 수 없는 회사")
             return user_input, company_name
     
+  
     return user_input, None
 
 def get_all_stocks():
+   
     return KOREAN_STOCKS
 
 def get_stock_count():
+   
     return len(KOREAN_STOCKS)
 
 def get_all_sectors():
+    
     return list(SECTORS.keys())
 
 
@@ -2726,17 +3287,15 @@ __author__ = "Stock Analysis Dashboard"
 __description__ = "한국 주식 티커 및 회사명 데이터베이스"
 
 if __name__ == "__main__":
-   
+ 
     print(f"한국 주식 데이터베이스 v{__version__}")
     print(f"총 {get_stock_count()}개 종목 지원")
     print(f"지원 섹터: {', '.join(get_all_sectors())}")
     
-   
+
     test_searches = ["삼성", "SK", "현대"]
     for keyword in test_searches:
         results = search_stocks(keyword)
         print(f"\n'{keyword}' 검색 결과: {len(results)}개")
         for ticker, name in results[:3]:  # 상위 3개만 표시
-
             print(f"  - {ticker}: {name}")
-
