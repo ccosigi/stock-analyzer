@@ -32,10 +32,8 @@ def load_history():
         return None
 
 def zscore_to_100(col):
-    """Z-스코어 → 0~100 변환 (Z=0 → 50, Z=-3 → 0, Z=+3 → 100)"""
     z = (col - col.mean()) / col.std()
-    scaled = (z + 3) / 6 * 100
-    return scaled.clip(0, 100)
+    return ((z + 3) / 6 * 100).clip(0, 100)
 
 def history_tab():
     st.markdown('<div class="sub-header">📈 일별 시장 지표 히스토리</div>', unsafe_allow_html=True)
@@ -63,17 +61,23 @@ def history_tab():
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
+    left_vals = []
+    right_vals = []
+
     for key in selected:
         label = available[key]
         is_qqq = key == "qqq_price"
-        raw = df[key]
+        raw = df[key].dropna()
 
         if is_qqq:
-            y = raw
+            y = df[key]
+            right_vals.extend(raw.tolist())
         elif key == "vix":
-            y = zscore_to_100(raw)
+            y = zscore_to_100(df[key])
+            left_vals.extend(y.dropna().tolist())
         else:
-            y = raw  # FGI, RSI 원래 값 그대로
+            y = df[key]
+            left_vals.extend(raw.tolist())
 
         fig.add_trace(
             go.Scatter(
@@ -82,7 +86,7 @@ def history_tab():
                 name=label,
                 mode="lines+markers",
                 line=dict(color=COLORS[key], width=2),
-                customdata=raw,
+                customdata=df[key],
                 hovertemplate=(
                     f"{label}: $%{{customdata:.2f}}<extra></extra>"
                     if is_qqq else
@@ -92,15 +96,22 @@ def history_tab():
             secondary_y=is_qqq,
         )
 
+    # 선택된 지표 기준 오토스케일
+    left_min = max(0, min(left_vals) * 0.95) if left_vals else 0
+    left_max = min(100, max(left_vals) * 1.05) if left_vals else 100
+    right_min = min(right_vals) * 0.98 if right_vals else None
+    right_max = max(right_vals) * 1.02 if right_vals else None
+
     fig.update_layout(
         yaxis=dict(
             title="지표 값",
-            range=[0, 100],
+            range=[left_min, left_max],
             showgrid=True,
             gridcolor="rgba(128,128,128,0.15)",
         ),
         yaxis2=dict(
             title="나스닥 QQQ ($)",
+            range=[right_min, right_max],
             showgrid=False,
             color=COLORS["qqq_price"],
         ),
@@ -114,7 +125,7 @@ def history_tab():
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("VIX: Z-스코어→0~100 변환 (평균=50) · FGI · RSI 실제값 | 오른쪽: 나스닥 QQQ 실제 가격")
+    st.caption("VIX: Z-스코어→0~100 변환 · FGI · RSI 실제값 | 오른쪽: 나스닥 QQQ 실제 가격 | hover시 실제값 표시")
 
     st.markdown("---")
     with st.expander("🗃️ 상세 데이터 보기"):
