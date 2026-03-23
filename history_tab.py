@@ -11,20 +11,11 @@ CHART_COLS = {
     "qqq_price": "나스닥 (QQQ)",
 }
 
-RIGHT_AXIS = {"qqq_price"}
-
 COLORS = {
     "vix":       "#e74c3c",
     "fgi":       "#f39c12",
     "spy_rsi":   "#3498db",
     "qqq_price": "#2ecc71",
-}
-
-# 지표별 y축 고정 범위
-Y_RANGE = {
-    "vix":       [0, 80],
-    "fgi":       [0, 100],
-    "spy_rsi":   [0, 100],
 }
 
 @st.cache_data(ttl=3600)
@@ -62,7 +53,6 @@ def history_tab():
 
     available = {k: v for k, v in CHART_COLS.items() if k in df.columns}
 
-    # 지표 선택 (차트 위)
     selected = st.multiselect(
         "표시할 지표 선택",
         options=list(available.keys()),
@@ -74,47 +64,37 @@ def history_tab():
         st.info("지표를 하나 이상 선택하세요.")
         return
 
-    # 왼쪽 y축 범위: 선택된 지표 중 고정범위 있는 것 기준
-    left_selected = [k for k in selected if k not in RIGHT_AXIS]
-    left_min = 0
-    left_max = max([Y_RANGE[k][1] for k in left_selected if k in Y_RANGE], default=100)
-
-    # 오른쪽 y축 범위: 나스닥 실제 데이터 기준 + 여백
-    qqq_data = df["qqq_price"] if "qqq_price" in df.columns else None
-    if qqq_data is not None:
-        qqq_min = qqq_data.min() * 0.98
-        qqq_max = qqq_data.max() * 1.02
-    else:
-        qqq_min, qqq_max = 0, 1
-
     fig = go.Figure()
 
     for key in selected:
         label = available[key]
-        is_right = key in RIGHT_AXIS
-        fig.add_trace(go.Scatter(
-            x=df["date"],
-            y=df[key],
-            name=label,
-            yaxis="y2" if is_right else "y1",
-            line=dict(color=COLORS.get(key), width=2),
-            hovertemplate=f"{label}: %{{y:.2f}}<extra></extra>",
-        ))
+        if key == "qqq_price":
+            col = df[key]
+            normalized = (col - col.min()) / (col.max() - col.min()) * 100
+            fig.add_trace(go.Scatter(
+                x=df["date"],
+                y=normalized,
+                name=label,
+                mode="lines",
+                line=dict(color=COLORS[key], width=2),
+                customdata=col,
+                hovertemplate=f"{label}: $%{{customdata:.2f}}<extra></extra>",
+            ))
+        else:
+            fig.add_trace(go.Scatter(
+                x=df["date"],
+                y=df[key],
+                name=label,
+                mode="lines",
+                line=dict(color=COLORS[key], width=2),
+                hovertemplate=f"{label}: %{{y:.2f}}<extra></extra>",
+            ))
 
     fig.update_layout(
         yaxis=dict(
-            title="지표 값",
-            side="left",
-            range=[left_min, left_max],
+            range=[0, 100],
             showgrid=True,
             gridcolor="rgba(128,128,128,0.15)",
-        ),
-        yaxis2=dict(
-            title="나스닥 (QQQ)",
-            side="right",
-            overlaying="y",
-            range=[qqq_min, qqq_max],
-            showgrid=False,
         ),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
         margin=dict(l=0, r=0, t=40, b=0),
@@ -126,4 +106,4 @@ def history_tab():
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("나스닥(QQQ)은 오른쪽 y축 기준 | VIX: 0~80 | FGI·RSI: 0~100")
+    st.caption("나스닥(QQQ)은 0~100으로 정규화 | hover시 실제 금액 표시")
