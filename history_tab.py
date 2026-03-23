@@ -104,7 +104,7 @@ def history_tab():
     fig.update_layout(
         yaxis=dict(
             title="지표 값",
-            range=[left_min, left_max],
+            range=[left_min, left_min + (left_max - left_min) / 0.7],
             showgrid=True,
             gridcolor="rgba(128,128,128,0.15)",
         ),
