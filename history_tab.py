@@ -70,7 +70,9 @@ def history_tab():
         label = available[key]
         if key == "qqq_price":
             col = df[key]
-            normalized = (col - col.min()) / (col.max() - col.min()) * 100
+            col = df[key]
+            col_range = col.max() - col.min()
+            normalized = (col - col.min()) / col_range * 100 if col_range != 0 else col * 0 + 50
             fig.add_trace(go.Scatter(
                 x=df["date"],
                 y=normalized,
