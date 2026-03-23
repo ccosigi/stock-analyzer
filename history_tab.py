@@ -30,10 +30,6 @@ def load_history():
         st.error(f"데이터 로드 오류: {e}")
         return None
 
-def to_pct_change(col):
-    """첫날 기준 변화율 (%)"""
-    first = col.iloc[0]
-    return (col - first) / first * 100 if first != 0 else col * 0
 
 def history_tab():
     st.markdown('<div class="sub-header">📈 일별 시장 지표 히스토리</div>', unsafe_allow_html=True)
@@ -64,33 +60,37 @@ def history_tab():
 
     for key in selected:
         label = available[key]
-        raw = df[key]
-        pct = to_pct_change(raw)
-
-        if key == "qqq_price":
-            hover = f"{label}: $%{{customdata:.2f}} (%{{y:+.2f}}%)<extra></extra>"
-        else:
-            hover = f"{label}: %{{customdata:.2f}} (%{{y:+.2f}}%)<extra></extra>"
+        is_qqq = key == "qqq_price"
 
         fig.add_trace(go.Scatter(
             x=df["date"],
-            y=pct,
+            y=df[key],
             name=label,
             mode="lines+markers",
             line=dict(color=COLORS[key], width=2),
-            customdata=raw,
-            hovertemplate=hover,
+            yaxis="y1" if is_qqq else "y2",
+            hovertemplate=(
+                f"{label}: $%{{y:.2f}}<extra></extra>"
+                if is_qqq else
+                f"{label}: %{{y:.2f}}<extra></extra>"
+            ),
         ))
-
-    # 기준선 0
-    fig.add_hline(y=0, line_dash="dash", line_color="rgba(128,128,128,0.4)", line_width=1)
 
     fig.update_layout(
         yaxis=dict(
+            title="나스닥 QQQ ($)",
+            titlefont=dict(color=COLORS["qqq_price"]),
+            tickfont=dict(color=COLORS["qqq_price"]),
             showgrid=True,
-            gridcolor="rgba(128,128,128,0.15)",
-            title="첫날 대비 변화율 (%)",
-            ticksuffix="%",
+            gridcolor="rgba(128,128,128,0.1)",
+            side="left",
+        ),
+        yaxis2=dict(
+            title="지표 값",
+            showgrid=False,
+            side="right",
+            overlaying="y",
+            range=[0, 100],
         ),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
         margin=dict(l=0, r=0, t=40, b=0),
@@ -102,7 +102,7 @@ def history_tab():
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("모든 지표 첫날 기준 변화율 | hover시 실제값 표시")
+    st.caption("왼쪽 y축: 나스닥 QQQ 가격 | 오른쪽 y축: VIX · FGI · RSI")
 
     # ── 원본 데이터 (숨김) ──────────────────────────
     st.markdown("---")
@@ -111,4 +111,3 @@ def history_tab():
         display_df["date"] = display_df["date"].dt.strftime("%Y-%m-%d")
         display_df = display_df.drop(columns=["collected_at_utc"], errors="ignore")
         st.dataframe(display_df, use_container_width=True, hide_index=True)
-
