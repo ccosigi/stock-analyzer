@@ -31,9 +31,11 @@ def load_history():
         st.error(f"데이터 로드 오류: {e}")
         return None
 
-def normalize(col):
-    col_range = col.max() - col.min()
-    return (col - col.min()) / col_range * 100 if col_range != 0 else col * 0 + 50
+def zscore_to_100(col):
+    """Z-스코어 → 0~100 변환 (Z=0 → 50, Z=-3 → 0, Z=+3 → 100)"""
+    z = (col - col.mean()) / col.std()
+    scaled = (z + 3) / 6 * 100
+    return scaled.clip(0, 100)
 
 def history_tab():
     st.markdown('<div class="sub-header">📈 일별 시장 지표 히스토리</div>', unsafe_allow_html=True)
@@ -65,7 +67,13 @@ def history_tab():
         label = available[key]
         is_qqq = key == "qqq_price"
         raw = df[key]
-        y = raw if is_qqq else normalize(raw)
+
+        if is_qqq:
+            y = raw
+        elif key == "vix":
+            y = zscore_to_100(raw)
+        else:
+            y = raw  # FGI, RSI 원래 값 그대로
 
         fig.add_trace(
             go.Scatter(
@@ -78,7 +86,7 @@ def history_tab():
                 hovertemplate=(
                     f"{label}: $%{{customdata:.2f}}<extra></extra>"
                     if is_qqq else
-                    f"{label}: %{{customdata:.2f}} (정규화: %{{y:.1f}})<extra></extra>"
+                    f"{label}: %{{customdata:.2f}}<extra></extra>"
                 ),
             ),
             secondary_y=is_qqq,
@@ -86,7 +94,7 @@ def history_tab():
 
     fig.update_layout(
         yaxis=dict(
-            title="정규화 (0~100)",
+            title="지표 값",
             range=[0, 100],
             showgrid=True,
             gridcolor="rgba(128,128,128,0.15)",
@@ -106,7 +114,7 @@ def history_tab():
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("왼쪽: VIX · FGI · RSI 정규화 (0~100) | 오른쪽: 나스닥 QQQ 실제 가격 | hover시 실제값 표시")
+    st.caption("VIX: Z-스코어→0~100 변환 (평균=50) · FGI · RSI 실제값 | 오른쪽: 나스닥 QQQ 실제 가격")
 
     st.markdown("---")
     with st.expander("🗃️ 상세 데이터 보기"):
