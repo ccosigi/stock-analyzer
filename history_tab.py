@@ -7,7 +7,7 @@ CHART_COLS = {
     "vix":       "VIX",
     "fgi":       "공포&탐욕 (FGI)",
     "spy_rsi":   "SPY RSI",
-    "qqq_close": "나스닥 (QQQ)",
+    "qqq_price": "나스닥 (QQQ)",
 }
 
 @st.cache_data(ttl=3600)
