@@ -41,7 +41,6 @@ def history_tab():
         st.warning("아직 수집된 데이터가 없습니다.")
         return
 
-    # ── 차트 ────────────────────────────────────────
     st.subheader("📊 지표 추이 비교")
 
     available = {k: v for k, v in CHART_COLS.items() if k in df.columns}
@@ -62,7 +61,6 @@ def history_tab():
     for key in selected:
         label = available[key]
         is_qqq = key == "qqq_price"
-
         fig.add_trace(
             go.Scatter(
                 x=df["date"],
@@ -79,21 +77,18 @@ def history_tab():
             secondary_y=is_qqq,
         )
 
-    fig.update_yaxes(
-        title_text="지표 값",
-        showgrid=True,
-        gridcolor="rgba(128,128,128,0.15)",
-        range=[0, 100],
-        secondary_y=False,
-    )
-    fig.update_yaxes(
-        title_text="나스닥 QQQ ($)",
-        titlefont=dict(color=COLORS["qqq_price"]),
-        tickfont=dict(color=COLORS["qqq_price"]),
-        showgrid=False,
-        secondary_y=True,
-    )
     fig.update_layout(
+        yaxis=dict(
+            title="지표 값",
+            range=[0, 100],
+            showgrid=True,
+            gridcolor="rgba(128,128,128,0.15)",
+        ),
+        yaxis2=dict(
+            title="나스닥 QQQ ($)",
+            showgrid=False,
+            color=COLORS["qqq_price"],
+        ),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
         margin=dict(l=0, r=0, t=40, b=0),
         height=450,
@@ -106,7 +101,6 @@ def history_tab():
     st.plotly_chart(fig, use_container_width=True)
     st.caption("왼쪽 y축: VIX · FGI · RSI | 오른쪽 y축: 나스닥 QQQ 가격")
 
-    # ── 원본 데이터 (숨김) ──────────────────────────
     st.markdown("---")
     with st.expander("🗃️ 상세 데이터 보기"):
         display_df = df.copy()
