@@ -85,7 +85,7 @@ def history_tab():
                 x=df["date"],
                 y=df[key],
                 name=label,
-                mode="lines",
+                mode="lines+markers",
                 line=dict(color=COLORS[key], width=2),
                 hovertemplate=f"{label}: %{{y:.2f}}<extra></extra>",
             ))
