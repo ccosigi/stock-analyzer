@@ -39,23 +39,30 @@ def history_tab():
     display_df = display_df.drop(columns=["collected_at_utc"], errors="ignore")
     st.dataframe(display_df, use_container_width=True, hide_index=True)
 
-    csv_bytes = df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig")
-    st.download_button(
-        label="⬇️ CSV 다운로드",
-        data=csv_bytes,
-        file_name="market_indicators.csv",
-        mime="text/csv",
-    )
-
-    # ── 정규화 차트 ─────────────────────────────────
+    # ── 차트 ────────────────────────────────────────
     st.markdown("---")
-    st.subheader("📊 지표 추이 비교 (정규화)")
+    st.subheader("📊 지표 추이 비교")
 
     available = {k: v for k, v in CHART_COLS.items() if k in df.columns}
-    chart_data = df.set_index("date")[list(available.keys())].rename(columns=available)
 
-    # Min-Max 정규화 (0~1)
-    chart_normalized = (chart_data - chart_data.min()) / (chart_data.max() - chart_data.min())
+    selected = st.multiselect(
+        "표시할 지표 선택",
+        options=list(available.keys()),
+        default=list(available.keys()),
+        format_func=lambda x: available[x],
+    )
 
-    st.line_chart(chart_normalized)
-    st.caption("모든 지표를 0~1로 정규화하여 변화 추이를 비교합니다.")
+    if not selected:
+        st.info("위에서 지표를 하나 이상 선택하세요.")
+        return
+
+    chart_data = df.set_index("date")[selected].rename(columns=available).copy()
+
+    # 나스닥만 0~100으로 정규화
+    qqq_label = "나스닥 (QQQ)"
+    if qqq_label in chart_data.columns:
+        col = chart_data[qqq_label]
+        chart_data[qqq_label] = (col - col.min()) / (col.max() - col.min()) * 100
+
+    st.line_chart(chart_data)
+    st.caption("나스닥(QQQ)은 0~100으로 정규화하여 표시합니다.")
