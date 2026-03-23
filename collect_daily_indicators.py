@@ -1,20 +1,3 @@
-"""
-collect_daily_indicators.py
-───────────────────────────
-GitHub Actions에서 매일 실행되는 시장 지표 수집 스크립트.
-app.py의 1페이지(시장 감정 탭) 지표 6개를 수집해서
-data/market_indicators.csv 에 누적 저장합니다.
-
-수집 지표:
-  - 공포&탐욕 지수 (FGI)
-  - VIX
-  - QQQ 현재가 / 200일 이동평균 / 이격률(%)
-  - Put/Call 비율 (PCI)
-  - S&P500 RSI
-  - 원달러 환율 / 전일대비 변화량 / 변화율
-  - 나스닥(QQQ) 전일 대비 수익률 (나중에 상관관계 분석용)
-"""
-
 import os
 import time
 import requests
@@ -31,9 +14,6 @@ OUTPUT_DIR  = "data"
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "market_indicators.csv")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# ──────────────────────────────────────────
-# 수집 함수 (app.py 로직 그대로 복사)
-# ──────────────────────────────────────────
 
 def calculate_rsi(data: pd.Series, window: int = 14) -> float | None:
     try:
@@ -127,11 +107,6 @@ def fetch_pci():
     except Exception:
         pass
     return None
-
-
-# ──────────────────────────────────────────
-# 메인 수집
-# ──────────────────────────────────────────
 
 def collect() -> dict:
     now = datetime.now(timezone.utc)
