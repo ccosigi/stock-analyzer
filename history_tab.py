@@ -89,7 +89,7 @@ def history_tab():
             title="지표 값",
             showgrid=False,
             side="right",
-            overlaying="y",
+            overlaying="y1",
             range=[0, 100],
         ),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
