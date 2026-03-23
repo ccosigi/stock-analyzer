@@ -123,7 +123,7 @@ def history_tab():
         hovermode="x unified",
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(showgrid=True, gridcolor="rgba(128,128,128,0.15)"),
+        xaxis=dict(showgrid=True, gridcolor="rgba(128,128,128,0.15)"), hoverformat="%Y-%m-%d",),
     )
 
     st.plotly_chart(fig, use_container_width=True)
