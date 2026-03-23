@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 HISTORY_CSV = "data/market_indicators.csv"
 
@@ -56,42 +57,43 @@ def history_tab():
         st.info("지표를 하나 이상 선택하세요.")
         return
 
-    fig = go.Figure()
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     for key in selected:
         label = available[key]
         is_qqq = key == "qqq_price"
 
-        fig.add_trace(go.Scatter(
-            x=df["date"],
-            y=df[key],
-            name=label,
-            mode="lines+markers",
-            line=dict(color=COLORS[key], width=2),
-            yaxis="y1" if is_qqq else "y2",
-            hovertemplate=(
-                f"{label}: $%{{y:.2f}}<extra></extra>"
-                if is_qqq else
-                f"{label}: %{{y:.2f}}<extra></extra>"
+        fig.add_trace(
+            go.Scatter(
+                x=df["date"],
+                y=df[key],
+                name=label,
+                mode="lines+markers",
+                line=dict(color=COLORS[key], width=2),
+                hovertemplate=(
+                    f"{label}: $%{{y:.2f}}<extra></extra>"
+                    if is_qqq else
+                    f"{label}: %{{y:.2f}}<extra></extra>"
+                ),
             ),
-        ))
+            secondary_y=is_qqq,
+        )
 
+    fig.update_yaxes(
+        title_text="지표 값",
+        showgrid=True,
+        gridcolor="rgba(128,128,128,0.15)",
+        range=[0, 100],
+        secondary_y=False,
+    )
+    fig.update_yaxes(
+        title_text="나스닥 QQQ ($)",
+        titlefont=dict(color=COLORS["qqq_price"]),
+        tickfont=dict(color=COLORS["qqq_price"]),
+        showgrid=False,
+        secondary_y=True,
+    )
     fig.update_layout(
-        yaxis=dict(
-            title="나스닥 QQQ ($)",
-            titlefont=dict(color=COLORS["qqq_price"]),
-            tickfont=dict(color=COLORS["qqq_price"]),
-            showgrid=True,
-            gridcolor="rgba(128,128,128,0.1)",
-            side="left",
-        ),
-        yaxis2=dict(
-            title="지표 값",
-            showgrid=False,
-            side="right",
-            overlaying="y1",
-            range=[0, 100],
-        ),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
         margin=dict(l=0, r=0, t=40, b=0),
         height=450,
@@ -102,7 +104,7 @@ def history_tab():
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("왼쪽 y축: 나스닥 QQQ 가격 | 오른쪽 y축: VIX · FGI · RSI")
+    st.caption("왼쪽 y축: VIX · FGI · RSI | 오른쪽 y축: 나스닥 QQQ 가격")
 
     # ── 원본 데이터 (숨김) ──────────────────────────
     st.markdown("---")
