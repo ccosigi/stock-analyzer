@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 
 HISTORY_CSV = "data/market_indicators.csv"
 
@@ -8,6 +9,16 @@ CHART_COLS = {
     "fgi":       "공포&탐욕 (FGI)",
     "spy_rsi":   "SPY RSI",
     "qqq_price": "나스닥 (QQQ)",
+}
+
+# 나스닥은 오른쪽 y축, 나머지는 왼쪽
+RIGHT_AXIS = {"qqq_price"}
+
+COLORS = {
+    "vix":       "#e74c3c",
+    "fgi":       "#f39c12",
+    "spy_rsi":   "#3498db",
+    "qqq_price": "#2ecc71",
 }
 
 @st.cache_data(ttl=3600)
@@ -45,24 +56,44 @@ def history_tab():
 
     available = {k: v for k, v in CHART_COLS.items() if k in df.columns}
 
-    selected = st.multiselect(
+    # 차트 먼저
+    selected = st.session_state.get("selected_indicators", list(available.keys()))
+    selected = [k for k in selected if k in available]
+    if not selected:
+        selected = list(available.keys())
+
+    fig = go.Figure()
+
+    for key in selected:
+        label = available[key]
+        yaxis = "y2" if key in RIGHT_AXIS else "y1"
+        fig.add_trace(go.Scatter(
+            x=df["date"],
+            y=df[key],
+            name=label,
+            yaxis=yaxis,
+            line=dict(color=COLORS.get(key), width=1.8),
+        ))
+
+    fig.update_layout(
+        yaxis=dict(title="지표 값", side="left"),
+        yaxis2=dict(title="나스닥 (QQQ)", side="right", overlaying="y"),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+        margin=dict(l=0, r=0, t=40, b=0),
+        height=450,
+        hovermode="x unified",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+    st.caption("나스닥(QQQ)은 오른쪽 y축 기준입니다.")
+
+    # 지표 선택은 차트 아래에
+    selected_new = st.multiselect(
         "표시할 지표 선택",
         options=list(available.keys()),
         default=list(available.keys()),
         format_func=lambda x: available[x],
+        key="selected_indicators",
     )
-
-    if not selected:
-        st.info("위에서 지표를 하나 이상 선택하세요.")
-        return
-
-    chart_data = df.set_index("date")[selected].rename(columns=available).copy()
-
-    # 나스닥만 0~100으로 정규화
-    qqq_label = "나스닥 (QQQ)"
-    if qqq_label in chart_data.columns:
-        col = chart_data[qqq_label]
-        chart_data[qqq_label] = (col - col.min()) / (col.max() - col.min()) * 100
-
-    st.line_chart(chart_data)
-    st.caption("나스닥(QQQ)은 0~100으로 정규화하여 표시합니다.")
