@@ -17,8 +17,8 @@ COLORS = {
     "spy_rsi":   "#3498db",
     "qqq_price": "#2ecc71",
 }
-@st.cache_data(ttl=3600)
 
+@st.cache_data(ttl=3600)
 def load_history():
     try:
         df = pd.read_csv(HISTORY_CSV, parse_dates=["date"])
@@ -40,15 +40,7 @@ def history_tab():
         st.warning("아직 수집된 데이터가 없습니다.")
         return
 
-    # ── 원본 데이터 테이블 ──────────────────────────
-    st.subheader("🗃️ 원본 데이터")
-    display_df = df.copy()
-    display_df["date"] = display_df["date"].dt.strftime("%Y-%m-%d")
-    display_df = display_df.drop(columns=["collected_at_utc"], errors="ignore")
-    st.dataframe(display_df, use_container_width=True, hide_index=True)
-
     # ── 차트 ────────────────────────────────────────
-    st.markdown("---")
     st.subheader("📊 지표 추이 비교")
 
     available = {k: v for k, v in CHART_COLS.items() if k in df.columns}
@@ -69,7 +61,6 @@ def history_tab():
     for key in selected:
         label = available[key]
         if key == "qqq_price":
-            col = df[key]
             col = df[key]
             col_range = col.max() - col.min()
             normalized = (col - col.min()) / col_range * 100 if col_range != 0 else col * 0 + 50
@@ -109,3 +100,11 @@ def history_tab():
 
     st.plotly_chart(fig, use_container_width=True)
     st.caption("나스닥(QQQ)은 0~100으로 정규화")
+
+    # ── 원본 데이터 (숨김) ──────────────────────────
+    st.markdown("---")
+    with st.expander("🗃️ 상세 데이터 보기"):
+        display_df = df.copy()
+        display_df["date"] = display_df["date"].dt.strftime("%Y-%m-%d")
+        display_df = display_df.drop(columns=["collected_at_utc"], errors="ignore")
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
