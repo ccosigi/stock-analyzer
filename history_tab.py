@@ -96,7 +96,6 @@ def history_tab():
             secondary_y=is_qqq,
         )
 
-    # 선택된 지표 기준 오토스케일
     left_min = max(0, min(left_vals) * 0.95) if left_vals else 0
     left_max = min(100, max(left_vals) * 1.05) if left_vals else 100
     right_min = min(right_vals) * 0.98 if right_vals else None
@@ -108,8 +107,6 @@ def history_tab():
             range=[left_min, left_max],
             showgrid=True,
             gridcolor="rgba(128,128,128,0.15)",
-            tickformat="%Y-%m-%d",
-            hoverformat="%Y-%m-%d"
         ),
         yaxis2=dict(
             title="나스닥 QQQ ($)",
@@ -123,11 +120,16 @@ def history_tab():
         hovermode="x unified",
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(showgrid=True, gridcolor="rgba(128,128,128,0.15)", hoverformat="%Y-%m-%d",
-    ),
+        xaxis=dict(
+            showgrid=True,
+            gridcolor="rgba(128,128,128,0.15)",
+            tickformat="%Y-%m-%d",
+            hoverformat="%Y-%m-%d",
+        ),
+    )
 
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("VIX: Z-스코어→0~100 변환 · FGI · RSI 실제값 | 오른쪽: 나스닥 QQQ 실제 가격")
+    st.caption("VIX: Z-스코어→0~100 변환 · FGI · RSI 실제값 | 오른쪽: 나스닥 QQQ 실제 가격 | hover시 실제값 표시")
 
     st.markdown("---")
     with st.expander("🗃️ 상세 데이터 보기"):
