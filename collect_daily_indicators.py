@@ -157,7 +157,6 @@ def collect() -> dict:
         # 환율
         "usd_krw":           usd_krw,
         
-        "qqq_close": qqq_price,
     }
     return row
 
