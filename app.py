@@ -1303,7 +1303,7 @@ def main():
     st.markdown('<h1 class="main-header">📈 주식 시장 분석 대시보드</h1>', unsafe_allow_html=True)
     
     # Create tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 시장 감정", "📉 하락 분석", "🎯 S&P500 스크리너", 히스토리])
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 시장 감정", "📉 하락 분석", "🎯 S&P500 스크리너", "히스토리"])
     
     with tab1:
         market_sentiment_tab()
