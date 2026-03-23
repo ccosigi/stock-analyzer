@@ -17,7 +17,7 @@ COLORS = {
     "spy_rsi":   "#3498db",
     "qqq_price": "#2ecc71",
 }
-
+st.write(df.columns.tolist())  # 원본 데이터 테이블 바로 아래에 추가
 @st.cache_data(ttl=3600)
 
 def load_history():
@@ -107,4 +107,4 @@ def history_tab():
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("나스닥(QQQ)은 0~100으로 정규화)
+    st.caption("나스닥(QQQ)은 0~100으로 정규화")
