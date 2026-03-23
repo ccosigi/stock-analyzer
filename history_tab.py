@@ -129,7 +129,7 @@ def history_tab():
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("VIX: Z-스코어→0~100 변환 · FGI · RSI 실제값 | 오른쪽: 나스닥 QQQ 실제 가격 | hover시 실제값 표시")
+    st.caption("VIX: Z-스코어→0~100 변환 · FGI · RSI 실제값 | 오른쪽: 나스닥 QQQ 실제 가격 ")
 
     st.markdown("---")
     with st.expander("🗃️ 상세 데이터 보기"):
