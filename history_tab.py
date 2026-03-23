@@ -19,7 +19,7 @@ COLORS = {
 }
 
 @st.cache_data(ttl=3600)
-st.write(df.columns.tolist())  # 원본 데이터 테이블 바로 아래에 추가
+st.write(df.columns.tolist()  # 원본 데이터 테이블 바로 아래에 추가
 def load_history():
     try:
         df = pd.read_csv(HISTORY_CSV, parse_dates=["date"])
