@@ -30,6 +30,9 @@ def load_history():
         st.error(f"데이터 로드 오류: {e}")
         return None
 
+def normalize(col):
+    col_range = col.max() - col.min()
+    return (col - col.min()) / col_range * 100 if col_range != 0 else col * 0 + 50
 
 def history_tab():
     st.markdown('<div class="sub-header">📈 일별 시장 지표 히스토리</div>', unsafe_allow_html=True)
@@ -60,34 +63,31 @@ def history_tab():
 
     for key in selected:
         label = available[key]
+        raw = df[key]
+        norm = normalize(raw)
+
+        # hover에 실제값 표시
         if key == "qqq_price":
-            col = df[key]
-            col_range = col.max() - col.min()
-            normalized = (col - col.min()) / col_range * 100 if col_range != 0 else col * 0 + 50
-            fig.add_trace(go.Scatter(
-                x=df["date"],
-                y=normalized,
-                name=label,
-                mode="lines+markers",
-                line=dict(color=COLORS[key], width=2),
-                customdata=col,
-                hovertemplate=f"{label}: $%{{customdata:.2f}}<extra></extra>",
-            ))
+            hover = f"{label}: $%{{customdata:.2f}}<extra></extra>"
         else:
-            fig.add_trace(go.Scatter(
-                x=df["date"],
-                y=df[key],
-                name=label,
-                mode="lines+markers",
-                line=dict(color=COLORS[key], width=2),
-                hovertemplate=f"{label}: %{{y:.2f}}<extra></extra>",
-            ))
+            hover = f"{label}: %{{customdata:.2f}}<extra></extra>"
+
+        fig.add_trace(go.Scatter(
+            x=df["date"],
+            y=norm,
+            name=label,
+            mode="lines+markers",
+            line=dict(color=COLORS[key], width=2),
+            customdata=raw,
+            hovertemplate=hover,
+        ))
 
     fig.update_layout(
         yaxis=dict(
             range=[0, 100],
             showgrid=True,
             gridcolor="rgba(128,128,128,0.15)",
+            title="정규화 (0~100)",
         ),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
         margin=dict(l=0, r=0, t=40, b=0),
@@ -99,7 +99,7 @@ def history_tab():
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("나스닥(QQQ)은 0~100으로 정규화")
+    st.caption("모든 지표 0~100 정규화 | hover시 실제값 표시")
 
     # ── 원본 데이터 (숨김) ──────────────────────────
     st.markdown("---")
