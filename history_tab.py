@@ -109,7 +109,7 @@ def history_tab():
             showgrid=True,
             gridcolor="rgba(128,128,128,0.15)",
             tickformat="%Y-%m-%d",
-            hoverformat="%Y-%m-%d",
+            hoverformat="%Y-%m-%d"
         ),
         yaxis2=dict(
             title="나스닥 QQQ ($)",
