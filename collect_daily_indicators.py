@@ -7,9 +7,7 @@ import yfinance as yf
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup
 
-# ──────────────────────────────────────────
-# 설정
-# ──────────────────────────────────────────
+
 OUTPUT_DIR  = "data"
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "market_indicators.csv")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
