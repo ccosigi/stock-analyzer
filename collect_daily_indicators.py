@@ -59,25 +59,20 @@ def get_vix():
 def get_usd_krw():
     try:
         data = yf.Ticker("USDKRW=X").history(period="5d")
-        if len(data) >= 2:
-            rate   = round(float(data["Close"].iloc[-1]), 2)
-            change = round(float(data["Close"].iloc[-1] - data["Close"].iloc[-2]), 2)
-            pct    = round(change / float(data["Close"].iloc[-2]) * 100, 4)
-            return rate, change, pct
+        if not data.empty:
+            return round(float(data["Close"].iloc[-1]), 2)
     except Exception:
         pass
-    return None, None, None
+    return None
 
 def get_us30y_yield():
     try:
         data = yf.Ticker("^TYX").history(period="5d")
-        if len(data) >= 2:
-            rate   = round(float(data["Close"].iloc[-1]), 3)
-            change = round(float(data["Close"].iloc[-1] - data["Close"].iloc[-2]), 3)
-            return rate, change
+        if not data.empty:
+            return round(float(data["Close"].iloc[-1]), 3)
     except Exception:
         pass
-    return None, None
+    return None
 
 
 def get_sp500_rsi():
@@ -140,11 +135,12 @@ def collect() -> dict:
     rsi = get_sp500_rsi()
     print(f"  SPY RSI: {rsi}")
 
-    usd_krw, usd_krw_chg, usd_krw_pct = get_usd_krw()
-    print(f"  USD/KRW: {usd_krw} ({usd_krw_chg}, {usd_krw_pct}%)")
+    usd_krw = get_usd_krw()
+    print(f"  USD/KRW: {usd_krw}")
 
-    us30y, us30y_chg = get_us30y_yield()
-    print(f"  US 30Y Yield: {us30y}% ({us30y_chg:+.3f})" if us30y is not None else "  US 30Y Yield: None")
+
+    us30y = get_us30y_yield()
+    print(f"  US 30Y Yield: {us30y}")
 
     row = {
         "date":              now.strftime("%Y-%m-%d"),
@@ -172,7 +168,7 @@ def collect() -> dict:
         "usd_krw":           usd_krw,
 
         # 30년 국채
-        "us30y_yield":     us30y,      
+        "us30y":     us30y,      
     }
     return row
 
