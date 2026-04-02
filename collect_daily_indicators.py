@@ -68,6 +68,17 @@ def get_usd_krw():
         pass
     return None, None, None
 
+def get_us30y_yield():
+    try:
+        data = yf.Ticker("^TYX").history(period="5d")
+        if len(data) >= 2:
+            rate   = round(float(data["Close"].iloc[-1]), 3)
+            change = round(float(data["Close"].iloc[-1] - data["Close"].iloc[-2]), 3)
+            return rate, change
+    except Exception:
+        pass
+    return None, None
+
 
 def get_sp500_rsi():
     try:
@@ -132,6 +143,9 @@ def collect() -> dict:
     usd_krw, usd_krw_chg, usd_krw_pct = get_usd_krw()
     print(f"  USD/KRW: {usd_krw} ({usd_krw_chg}, {usd_krw_pct}%)")
 
+    us30y, us30y_chg = get_us30y_yield()
+    print(f"  US 30Y Yield: {us30y}% ({us30y_chg:+.3f})" if us30y is not None else "  US 30Y Yield: None")
+
     row = {
         "date":              now.strftime("%Y-%m-%d"),
         "collected_at_utc":  now.strftime("%Y-%m-%d %H:%M:%S"),
@@ -156,7 +170,9 @@ def collect() -> dict:
 
         # 환율
         "usd_krw":           usd_krw,
-        
+
+        # 30년 국채
+        "us30y_yield":     us30y,      
     }
     return row
 
