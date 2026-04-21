@@ -358,15 +358,18 @@ def get_qqq_data():
         qqq = yf.Ticker("QQQ")
         data = qqq.history(period="1d")
         if data.empty:
-            return None, None
+            return None, None, None
         qqq_price = data['Close'].iloc[-1]
         qqq_history = qqq.history(period="200d")['Close']
         if len(qqq_history) < 200:
-            return None, None
+            return None, None, None
         qqq_sma = qqq_history.mean()
-        return qqq_price, qqq_sma
+        # 52주(1년) 최고점 = 전고점
+        qqq_52w = qqq.history(period="1y")['Close']
+        qqq_all_time_high = qqq_52w.max() if not qqq_52w.empty else None
+        return qqq_price, qqq_sma, qqq_all_time_high
     except Exception:
-        return None, None
+        return None, None, None
 
 @st.cache_data(ttl=60)
 def get_vix_data():
@@ -597,7 +600,7 @@ def display_metric(title, value, interpretation, sentiment):
 
 def market_sentiment_tab():
     st.markdown('<div class="sub-header">📊 실시간 시장 지표</div>', unsafe_allow_html=True)
-    qqq_price, qqq_sma = get_qqq_data()
+    qqq_price, qqq_sma, qqq_high = get_qqq_data()
     vix = get_vix_data()
     fgi = fetch_fgi()
     pci = fetch_pci()
@@ -663,6 +666,116 @@ def market_sentiment_tab():
             display_metric("🔁 원달러 환율", "N/A", "데이터 로딩 실패", "neutral")
 
     
+    # ── QQQ 레버리지 전략 패널 ──────────────────────────────────────
+    st.markdown("---")
+    st.markdown('<div class="sub-header">📐 QQQ 레버리지 전환 전략</div>', unsafe_allow_html=True)
+
+    def get_leverage_strategy(drop_pct):
+        """하락률에 따른 권장 전략 반환"""
+        if drop_pct is None:
+            return None, None, "neutral"
+        if drop_pct < 5:
+            return "평상시", "QQQ 100%", "bullish"
+        elif drop_pct < 10:
+            return "−5% 구간", "QQQ 90% / QLD 10%", "bullish"
+        elif drop_pct < 15:
+            return "−10% 구간", "QQQ 70% / QLD 30%", "neutral"
+        elif drop_pct < 20:
+            return "−15% 구간", "QQQ 40% / QLD 60%", "neutral"
+        elif drop_pct < 25:
+            return "−20% 구간", "QLD 100%", "neutral"
+        elif drop_pct < 30:
+            return "−25% 구간", "QLD 50% / TQQQ 50%", "bearish"
+        else:
+            return "−30% 이상", "TQQQ 100%", "bearish"
+
+    STRATEGY_STEPS = [
+        ("평상시",   0,   "QQQ 100%",            "bullish"),
+        ("−5%",      5,   "QQQ 90% / QLD 10%",   "bullish"),
+        ("−10%",    10,   "QQQ 70% / QLD 30%",   "neutral"),
+        ("−15%",    15,   "QQQ 40% / QLD 60%",   "neutral"),
+        ("−20%",    20,   "QLD 100%",             "neutral"),
+        ("−25%",    25,   "QLD 50% / TQQQ 50%",  "bearish"),
+        ("−30%",    30,   "TQQQ 100%",            "bearish"),
+    ]
+
+    if qqq_price is not None and qqq_high is not None:
+        drop_pct = ((qqq_high - qqq_price) / qqq_high) * 100
+        stage_label, portfolio, stage_sentiment = get_leverage_strategy(drop_pct)
+
+        # 상단 요약 카드
+        summary_color = "#d4edda" if stage_sentiment == "bullish" else ("#fff3cd" if stage_sentiment == "neutral" else "#f8d7da")
+        border_color  = "#28a745" if stage_sentiment == "bullish" else ("#ffc107" if stage_sentiment == "neutral" else "#dc3545")
+        st.markdown(f"""
+        <div style="background:{summary_color}; border-left:5px solid {border_color};
+                    border-radius:10px; padding:1rem 1.2rem; margin-bottom:1rem;
+                    box-shadow:0 2px 4px rgba(0,0,0,0.08);">
+            <div style="display:flex; flex-wrap:wrap; gap:2rem; align-items:center;">
+                <div>
+                    <p style="margin:0; font-size:0.82rem; color:#555;">QQQ 현재가</p>
+                    <p style="margin:0; font-size:1.6rem; font-weight:bold; color:#111;">${qqq_price:.2f}</p>
+                </div>
+                <div>
+                    <p style="margin:0; font-size:0.82rem; color:#555;">52주 전고점</p>
+                    <p style="margin:0; font-size:1.6rem; font-weight:bold; color:#111;">${qqq_high:.2f}</p>
+                </div>
+                <div>
+                    <p style="margin:0; font-size:0.82rem; color:#555;">전고점 대비 하락률</p>
+                    <p style="margin:0; font-size:1.6rem; font-weight:bold; color:{border_color};">−{drop_pct:.1f}%</p>
+                </div>
+                <div style="flex:1; min-width:200px;">
+                    <p style="margin:0; font-size:0.82rem; color:#555;">현재 구간 &nbsp;·&nbsp; 권장 포트폴리오</p>
+                    <p style="margin:0; font-size:1.1rem; font-weight:bold; color:#111;">
+                        {stage_label} &nbsp;→&nbsp; {portfolio}
+                    </p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 구간별 테이블
+        rows_html = ""
+        for label, threshold, alloc, sentiment in STRATEGY_STEPS:
+            is_current = (stage_label.startswith(label.split()[0]) and label != "평상시") or \
+                         (label == "평상시" and stage_label == "평상시")
+            # 현재 구간 강조
+            if label == stage_label or (label == "평상시" and stage_label == "평상시"):
+                row_bg  = "#fff9c4"
+                row_fw  = "bold"
+                marker  = "◀ 현재"
+            else:
+                row_bg  = "transparent"
+                row_fw  = "normal"
+                marker  = ""
+            rows_html += f"""
+            <tr style="background:{row_bg};">
+                <td style="padding:6px 10px; font-weight:{row_fw};">{label}</td>
+                <td style="padding:6px 10px;">{alloc}</td>
+                <td style="padding:6px 10px; color:#e67e00; font-weight:{row_fw};">{marker}</td>
+            </tr>"""
+
+        st.markdown(f"""
+        <table style="width:100%; border-collapse:collapse; font-size:0.93rem; border-radius:8px; overflow:hidden;">
+            <thead>
+                <tr style="background:#f0f0f0;">
+                    <th style="padding:7px 10px; text-align:left;">하락 구간</th>
+                    <th style="padding:7px 10px; text-align:left;">권장 포트폴리오</th>
+                    <th style="padding:7px 10px; text-align:left;"></th>
+                </tr>
+            </thead>
+            <tbody>{rows_html}</tbody>
+        </table>
+        <p style="font-size:0.78rem; color:#888; margin-top:0.5rem;">
+            ※ 52주 최고가 기준 하락률 / 하락·회복 동일 원칙 적용 &nbsp;|&nbsp;
+            QLD = 나스닥 2배 레버리지 &nbsp;|&nbsp; TQQQ = 나스닥 3배 레버리지
+        </p>
+        """, unsafe_allow_html=True)
+    else:
+        st.warning("QQQ 데이터를 불러오지 못했습니다. 잠시 후 새로고침 해주세요.")
+
+    st.markdown("---")
+    # ────────────────────────────────────────────────────────────────
+
     with st.expander("📖 지표 설명", expanded=False):
         st.markdown("""
         <div class="info-box">
