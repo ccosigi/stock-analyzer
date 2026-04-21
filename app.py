@@ -605,7 +605,7 @@ def market_sentiment_tab():
         
         
     try:
-         spy_data = yf.Ticker("SPY").history(period="50d")["Close"]
+        spy_data = yf.Ticker("SPY").history(period="50d")["Close"]
         rsi = calculate_rsi_basic(spy_data)
     except:
         rsi = None
