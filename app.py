@@ -598,37 +598,6 @@ def display_metric(title, value, interpretation, sentiment):
 def market_sentiment_tab():
     st.markdown('<div class="sub-header">📊 실시간 시장 지표</div>', unsafe_allow_html=True)
 
-
-    col_refresh, col_auto = st.columns([1, 2])
-    with col_refresh:
-        if st.button("🔄 새로고침", key="refresh_market"):
-            st.cache_data.clear()
-            st.rerun()
-    
-    with col_auto:
-        auto_refresh = st.checkbox("자동 새로고침 (60초)", key="auto_refresh")
-    
-    if auto_refresh:
-        st.info("⏰ 60초마다 자동으로 업데이트됩니다.")
-        
-    with st.spinner("시장 데이터 로딩 중..."):
-       
-        qqq_price, qqq_sma = get_qqq_data()
-        vix = get_vix_data()
-        fgi = fetch_fgi()
-        pci = fetch_pci()
-        usd_krw_rate, usd_krw_change_amount, usd_krw_change_pct = get_usd_krw_rate()
-        
-        
-        try:
-            spy_data = yf.Ticker("SPY").history(period="50d")["Close"]
-            rsi = calculate_rsi_basic(spy_data)
-        except:
-            rsi = None
-
- 
-    
-    
     col1, col2 = st.columns([1, 1])
     
     with col1:
@@ -699,12 +668,6 @@ def market_sentiment_tab():
         </div>
         """, unsafe_allow_html=True)
     
-   
-    if auto_refresh:
-        import time
-        time.sleep(60)
-        st.rerun()
-
 
 def nday_analysis_tab():
     st.markdown('<div class="sub-header">📉 연속 하락 분석기</div>', unsafe_allow_html=True)
