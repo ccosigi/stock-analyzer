@@ -97,7 +97,12 @@ def get_stock_info(ticker):
 # ── 탭 메인 함수 ─────────────────────────────────────────────────────
 
 def sp500_screener_tab():
-    st.markdown('<div class="sub-header">🎯 S&P500 RSI 검색기</div>', unsafe_allow_html=True)
+    st.markdown('''
+    <div class="sub-header" style="color: inherit;">
+        🎯 S&P500 RSI 검색기
+    </div>
+    ''', unsafe_allow_html=True)
+    
 
     with st.expander("💡 설명 ", expanded=False):
         st.markdown("""
