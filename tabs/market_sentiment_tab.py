@@ -243,15 +243,15 @@ def market_sentiment_tab():
                 <div style="display:flex; gap:1.5rem; align-items:flex-end; flex-wrap:nowrap; margin-bottom:0.3rem;">
                     <div>
                         <p style="margin:0; font-size:0.78rem; color:#555;">현재가</p>
-                        <p style="margin:0; font-size:1.4rem; font-weight:bold; color:#000;">${qqq_price:.2f}</p>
+                        <p style="margin:0; font-size:1.75rem; font-weight:bold; color:#000;">${qqq_price:.2f}</p>
                     </div>
                     <div>
                         <p style="margin:0; font-size:0.78rem; color:#555;">200일 평균</p>
-                        <p style="margin:0; font-size:1.4rem; font-weight:bold; color:#000;">${qqq_sma:.2f}</p>
+                        <p style="margin:0; font-size:1.75rem; font-weight:bold; color:#000;">${qqq_sma:.2f}</p>
                     </div>
                     <div>
                         <p style="margin:0; font-size:0.78rem; color:#555;">대비</p>
-                        <p style="margin:0; font-size:1.4rem; font-weight:bold; color:{sma_border};">{trend_arrow} {diff_sign}{percentage_diff:.1f}%</p>
+                        <p style="margin:0; font-size:1.75rem; font-weight:bold; color:{sma_border};">{trend_arrow} {diff_sign}{percentage_diff:.1f}%</p>
                     </div>
                 </div>
                 <p style="margin:0; font-size:1rem; color:#555;">{trend_text} — 200일 이동평균 {above_below}</p>
