@@ -189,7 +189,11 @@ def get_leverage_strategy(drop_pct):
 # ── 탭 메인 함수 ─────────────────────────────────────────────────────
 
 def market_sentiment_tab():
-    st.markdown('<div class="sub-header">📊 실시간 시장 지표</div>', unsafe_allow_html=True)
+    st.markdown('''
+    <div class="sub-header" style="color: inherit;">
+        📊 실시간 시장 지표
+    </div>
+    ''', unsafe_allow_html=True)
 
     qqq_price, qqq_sma, qqq_high = get_qqq_data()
     vix = get_vix_data()
