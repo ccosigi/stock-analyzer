@@ -240,18 +240,10 @@ def market_sentiment_tab():
             st.markdown(f"""
             <div class="metric-container" style="background:{sma_bg}; border-left-color:{sma_border};">
                 <h3 style="margin-bottom:0.5rem; color:#333;">🚀 QQQ vs 200일 이동평균</h3>
-                <div style="display:flex; gap:1.8rem; align-items:center; margin-bottom:0.3rem;">
-                    <div style="text-align:left;">
-                        <p style="margin:0; font-size:1.75rem; font-weight:bold; color:#000;">${qqq_price:.2f}</p>
-                    </div>
-                    <div style="text-align:left;">
-                        <p style="margin:0; font-size:1.75rem; font-weight:bold; color:#000;">${qqq_sma:.2f}</p>
-                    </div>
-                    <div style="text-align:left;">
-                        <p style="margin:0; font-size:1.75rem; font-weight:bold; color:{sma_border};">{trend_arrow} {diff_sign}{percentage_diff:.1f}%</p>
-                    </div>
-                </div>
-                <p style="margin-bottom:0; font-size:1rem; color:#555;">현재가 | 200일 평균 | 대비 &nbsp;·&nbsp; {trend_text} — 200일 이동평균 {above_below}</p>
+                <h2 style="margin-bottom:0.3rem; color:{sma_border};">{trend_arrow} {diff_sign}{percentage_diff:.1f}%
+                    <span style="font-size:1rem; font-weight:normal; color:#666; margin-left:0.8rem;">${qqq_price:.2f} vs ${qqq_sma:.2f}</span>
+                </h2>
+                <p style="margin-bottom:0; font-size:1rem; color:#555;">{trend_text} — 200일 이동평균 {above_below}</p>
             </div>
             """, unsafe_allow_html=True)
         else:
