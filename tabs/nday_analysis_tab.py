@@ -59,19 +59,20 @@ def find_consecutive_drop_periods(data, analysis_days, drop_threshold):
 def nday_analysis_tab():
     st.markdown('<div class="sub-header">📉 연속 하락 분석기</div>', unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="info-box">
-        <h4>💡 분석 개요</h4>
-        <p><strong>하락 분석</strong>: a일 동안 b% 이상 하락한 경우, 마지막 하락일 기준 c일 후 주가 방향을 분석합니다.</p>
-        <ul>
-            <li><strong>분석기간</strong>: 몇일 동안의 하락을 확인할지 설정</li>
-            <li><strong>하락기준</strong>: 해당 기간 동안 총 몇 % 이상 하락했는지 기준</li>
-            <li><strong>~일 후 주가</strong>: 하락 마지막일 기준 며칠 후를 분석할지 설정</li>
-        </ul>
-        <p><strong>예시</strong>: 3일 동안 총 10% 하락 → 마지막일 기준 5일 후 주가가 회복되었나?</p>
-        <p><strong>해외 주식</strong>: 티커로 검색 &nbsp;&nbsp;&nbsp;&nbsp; <strong>국내 주식</strong>: 종목명 검색이 안될시 종목 코드 입력</p>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("💡 분석 개요", expanded=False):
+        st.markdown("""
+        <div class="info-box">
+            <h4>💡 분석 개요</h4>
+            <p><strong>하락 분석</strong>: a일 동안 b% 이상 하락한 경우, 마지막 하락일 기준 c일 후 주가 방향을 분석합니다.</p>
+            <ul>
+                <li><strong>분석기간</strong>: 몇일 동안의 하락을 확인할지 설정</li>
+                <li><strong>하락기준</strong>: 해당 기간 동안 총 몇 % 이상 하락했는지 기준</li>
+                <li><strong>~일 후 주가</strong>: 하락 마지막일 기준 며칠 후를 분석할지 설정</li>
+            </ul>
+            <p><strong>예시</strong>: 3일 동안 총 10% 하락 → 마지막일 기준 5일 후 주가가 회복되었나?</p>
+            <p><strong>해외 주식</strong>: 티커로 검색 &nbsp;&nbsp;&nbsp;&nbsp; <strong>국내 주식</strong>: 종목명 검색이 안될시 종목 코드 입력</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     col1, col2, col3, col4, col5 = st.columns([1.2, 1, 1, 1, 1])
 
