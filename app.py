@@ -679,22 +679,23 @@ def market_sentiment_tab():
             display_metric("🔁 원달러 환율", "N/A", "데이터 로딩 실패", "neutral")
 
     
-    st.markdown("""
-    <div class="info-box">
-        <h4>📖 지표 설명</h4>
-        <ul>
-            <li><strong>공포 & 탐욕 지수</strong>: 0-100 범위의 시장 심리 지표 (0=극도공포, 100=극도탐욕)</li>
-            <li><strong>VIX</strong>: 시장 변동성 예상 지수 (낮을수록 안정, 높을수록 불안)</li>
-            <li><strong>Put/Call 비율</strong>: 풋옵션 대비 콜옵션 거래량 </li>
-            <li><strong>RSI</strong>: 상대강도지수 (30 이하 과매도, 70 이상 과매수)</li>
-            <li><strong>QQQ vs 200일 이동 평균선</strong>: 나스닥 ETF의 장기 추세 분석</li>
-            <li><strong>원달러 환율</strong>: USD/KRW 환율 (상승시 원화약세, 하락시 원화강세)</li>
-        </ul>
-        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #6c757d;">
-            💡 <strong>팁</strong>: 여러 지표를 종합적으로 해석하여 투자 판단에 활용하세요.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("📖 지표 설명", expanded=False):
+        st.markdown("""
+        <div class="info-box">
+            <h4>📖 지표 설명</h4>
+            <ul>
+                <li><strong>공포 & 탐욕 지수</strong>: 0-100 범위의 시장 심리 지표 (0=극도공포, 100=극도탐욕)</li>
+                <li><strong>VIX</strong>: 시장 변동성 예상 지수 (낮을수록 안정, 높을수록 불안)</li>
+                <li><strong>Put/Call 비율</strong>: 풋옵션 대비 콜옵션 거래량 </li>
+                <li><strong>RSI</strong>: 상대강도지수 (30 이하 과매도, 70 이상 과매수)</li>
+                <li><strong>QQQ vs 200일 이동 평균선</strong>: 나스닥 ETF의 장기 추세 분석</li>
+                <li><strong>원달러 환율</strong>: USD/KRW 환율 (상승시 원화약세, 하락시 원화강세)</li>
+            </ul>
+            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #6c757d;">
+                💡 <strong>팁</strong>: 여러 지표를 종합적으로 해석하여 투자 판단에 활용하세요.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
     
    
     if auto_refresh:
