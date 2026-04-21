@@ -212,6 +212,7 @@ def market_sentiment_tab():
     except:
         rsi = None
 
+    # ── 1행: 공포탐욕 / Put-Call ────────────────────────────────────
     col1, col2 = st.columns([1, 1])
 
     with col1:
@@ -221,21 +222,42 @@ def market_sentiment_tab():
         else:
             display_metric("😨 공포 & 탐욕 지수", "N/A", "데이터 로딩 실패", "neutral")
 
+    with col2:
+        if pci is not None:
+            pci_interp, pci_sentiment = interpret_pci(pci)
+            display_metric("⚖️ Put/Call 비율", f"{pci:.3f}", pci_interp, pci_sentiment)
+        else:
+            display_metric("⚖️ Put/Call 비율", "N/A", "데이터 로딩 실패", "neutral")
+
+    # ── 2행: VIX / RSI ──────────────────────────────────────────────
+    col3, col4 = st.columns([1, 1])
+
+    with col3:
         if vix is not None:
             vix_interp, vix_sentiment = interpret_vix(vix)
             display_metric("📈 VIX (변동성 지수)", f"{vix:.2f}", vix_interp, vix_sentiment)
         else:
             display_metric("📈 VIX (변동성 지수)", "로딩중...", "데이터 새로고침 중 (잠시 후 다시 시도)", "neutral")
 
-        # ── QQQ vs 200일 이동평균 (깔끔한 멀티-메트릭 패널) ──────────
+    with col4:
+        if rsi is not None:
+            rsi_interp, rsi_sentiment = interpret_rsi(rsi)
+            display_metric("📊 RSI (S&P500)", f"{rsi:.1f}", rsi_interp, rsi_sentiment)
+        else:
+            display_metric("📊 RSI (S&P500)", "N/A", "데이터 로딩 실패", "neutral")
+
+    # ── 3행: QQQ 200일 이동평균 (좌, 넓은 패널) / 원달러 환율 (우) ──
+    col5, col6 = st.columns([3, 1])
+
+    with col5:
         if qqq_price is not None and qqq_sma is not None:
-            price_vs_sma   = "bullish" if qqq_price > qqq_sma else "bearish"
-            trend_text     = "상승 추세" if price_vs_sma == "bullish" else "하락 추세"
+            price_vs_sma    = "bullish" if qqq_price > qqq_sma else "bearish"
+            trend_text      = "상승 추세" if price_vs_sma == "bullish" else "하락 추세"
             percentage_diff = ((qqq_price - qqq_sma) / qqq_sma) * 100
             sma_bg     = "#d4edda" if price_vs_sma == "bullish" else "#f8d7da"
             sma_border = "#28a745" if price_vs_sma == "bullish" else "#dc3545"
             sma_txt    = "#155724" if price_vs_sma == "bullish" else "#721c24"
-            diff_sign  = "+" if percentage_diff >= 0 else ""
+            diff_sign   = "+" if percentage_diff >= 0 else ""
             trend_arrow = "▲" if percentage_diff >= 0 else "▼"
             st.markdown(f"""
             <div class="metric-container" style="background:{sma_bg}; border-left-color:{sma_border};">
@@ -265,19 +287,7 @@ def market_sentiment_tab():
         else:
             display_metric("🚀 QQQ vs 200일 이동평균", "N/A", "데이터 로딩 실패", "neutral")
 
-    with col2:
-        if pci is not None:
-            pci_interp, pci_sentiment = interpret_pci(pci)
-            display_metric("⚖️ Put/Call 비율", f"{pci:.3f}", pci_interp, pci_sentiment)
-        else:
-            display_metric("⚖️ Put/Call 비율", "N/A", "데이터 로딩 실패", "neutral")
-
-        if rsi is not None:
-            rsi_interp, rsi_sentiment = interpret_rsi(rsi)
-            display_metric("📊 RSI (S&P500)", f"{rsi:.1f}", rsi_interp, rsi_sentiment)
-        else:
-            display_metric("📊 RSI (S&P500)", "N/A", "데이터 로딩 실패", "neutral")
-
+    with col6:
         if usd_krw_rate is not None:
             usd_krw_interp, usd_krw_sentiment = interpret_usd_krw(usd_krw_rate, usd_krw_change_amount, usd_krw_change_pct)
             display_metric("🔁 원달러 환율", f"₩{usd_krw_rate:.2f}", usd_krw_interp, usd_krw_sentiment)
