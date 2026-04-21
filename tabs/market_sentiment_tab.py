@@ -212,7 +212,6 @@ def market_sentiment_tab():
     except:
         rsi = None
 
-    # ── 1행: 공포탐욕 / Put-Call ────────────────────────────────────
     col1, col2 = st.columns([1, 1])
 
     with col1:
@@ -222,6 +221,24 @@ def market_sentiment_tab():
         else:
             display_metric("😨 공포 & 탐욕 지수", "N/A", "데이터 로딩 실패", "neutral")
 
+        if vix is not None:
+            vix_interp, vix_sentiment = interpret_vix(vix)
+            display_metric("📈 VIX (변동성 지수)", f"{vix:.2f}", vix_interp, vix_sentiment)
+        else:
+            display_metric("📈 VIX (변동성 지수)", "로딩중...", "데이터 새로고침 중 (잠시 후 다시 시도)", "neutral")
+
+        if qqq_price is not None and qqq_sma is not None:
+            price_vs_sma    = "bullish" if qqq_price > qqq_sma else "bearish"
+            trend_text      = "상승 추세" if price_vs_sma == "bullish" else "하락 추세"
+            percentage_diff = ((qqq_price - qqq_sma) / qqq_sma) * 100
+            diff_sign   = "+" if percentage_diff >= 0 else ""
+            trend_arrow = "▲" if percentage_diff >= 0 else "▼"
+            sma_value = f"${qqq_price:.2f}  |  평균 ${qqq_sma:.2f}  |  {trend_arrow} {diff_sign}{percentage_diff:.1f}%"
+            sma_interp = f"{trend_text} — 200일 이동평균 {'위' if price_vs_sma == 'bullish' else '아래'}"
+            display_metric("🚀 QQQ vs 200일 이동평균", sma_value, sma_interp, price_vs_sma)
+        else:
+            display_metric("🚀 QQQ vs 200일 이동평균", "N/A", "데이터 로딩 실패", "neutral")
+
     with col2:
         if pci is not None:
             pci_interp, pci_sentiment = interpret_pci(pci)
@@ -229,65 +246,12 @@ def market_sentiment_tab():
         else:
             display_metric("⚖️ Put/Call 비율", "N/A", "데이터 로딩 실패", "neutral")
 
-    # ── 2행: VIX / RSI ──────────────────────────────────────────────
-    col3, col4 = st.columns([1, 1])
-
-    with col3:
-        if vix is not None:
-            vix_interp, vix_sentiment = interpret_vix(vix)
-            display_metric("📈 VIX (변동성 지수)", f"{vix:.2f}", vix_interp, vix_sentiment)
-        else:
-            display_metric("📈 VIX (변동성 지수)", "로딩중...", "데이터 새로고침 중 (잠시 후 다시 시도)", "neutral")
-
-    with col4:
         if rsi is not None:
             rsi_interp, rsi_sentiment = interpret_rsi(rsi)
             display_metric("📊 RSI (S&P500)", f"{rsi:.1f}", rsi_interp, rsi_sentiment)
         else:
             display_metric("📊 RSI (S&P500)", "N/A", "데이터 로딩 실패", "neutral")
 
-    # ── 3행: QQQ 200일 이동평균 (좌, 넓은 패널) / 원달러 환율 (우) ──
-    col5, col6 = st.columns([3, 1])
-
-    with col5:
-        if qqq_price is not None and qqq_sma is not None:
-            price_vs_sma    = "bullish" if qqq_price > qqq_sma else "bearish"
-            trend_text      = "상승 추세" if price_vs_sma == "bullish" else "하락 추세"
-            percentage_diff = ((qqq_price - qqq_sma) / qqq_sma) * 100
-            sma_bg     = "#d4edda" if price_vs_sma == "bullish" else "#f8d7da"
-            sma_border = "#28a745" if price_vs_sma == "bullish" else "#dc3545"
-            sma_txt    = "#155724" if price_vs_sma == "bullish" else "#721c24"
-            diff_sign   = "+" if percentage_diff >= 0 else ""
-            trend_arrow = "▲" if percentage_diff >= 0 else "▼"
-            st.markdown(f"""
-            <div class="metric-container" style="background:{sma_bg}; border-left-color:{sma_border};">
-                <h3 style="margin-bottom:0.7rem; color:#333;">🚀 QQQ vs 200일 이동평균</h3>
-                <div style="display:flex; flex-wrap:wrap; gap:2rem; align-items:center;">
-                    <div>
-                        <p style="margin:0; font-size:0.82rem; color:#555;">QQQ 현재가</p>
-                        <p style="margin:0; font-size:1.6rem; font-weight:bold; color:#111;">${qqq_price:.2f}</p>
-                    </div>
-                    <div>
-                        <p style="margin:0; font-size:0.82rem; color:#555;">200일 이동평균</p>
-                        <p style="margin:0; font-size:1.6rem; font-weight:bold; color:#111;">${qqq_sma:.2f}</p>
-                    </div>
-                    <div>
-                        <p style="margin:0; font-size:0.82rem; color:#555;">200일 평균 대비</p>
-                        <p style="margin:0; font-size:1.6rem; font-weight:bold; color:{sma_border};">{trend_arrow} {diff_sign}{percentage_diff:.1f}%</p>
-                    </div>
-                    <div style="flex:1; min-width:160px;">
-                        <p style="margin:0; font-size:0.82rem; color:#555;">추세 판단</p>
-                        <p style="margin:0; font-size:1.05rem; font-weight:bold; color:{sma_txt};">
-                            {trend_text} &nbsp;—&nbsp; 200일 이동평균 {'위' if price_vs_sma == 'bullish' else '아래'}
-                        </p>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            display_metric("🚀 QQQ vs 200일 이동평균", "N/A", "데이터 로딩 실패", "neutral")
-
-    with col6:
         if usd_krw_rate is not None:
             usd_krw_interp, usd_krw_sentiment = interpret_usd_krw(usd_krw_rate, usd_krw_change_amount, usd_krw_change_pct)
             display_metric("🔁 원달러 환율", f"₩{usd_krw_rate:.2f}", usd_krw_interp, usd_krw_sentiment)
