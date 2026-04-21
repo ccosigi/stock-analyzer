@@ -99,18 +99,19 @@ def get_stock_info(ticker):
 def sp500_screener_tab():
     st.markdown('<div class="sub-header">🎯 S&P500 RSI 검색기</div>', unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="info-box">
-        <h4>💡 스크리닝 조건</h4>
-        <p><strong>과매도 + 변동성 낮음 조건</strong>으로 반등 후보 종목을 찾습니다.</p>
-        <ul>
-            <li><strong>RSI &lt; 40</strong>: 과매도 상태 (상대강도지수 40 미만)</li>
-            <li><strong>볼린저 밴드 하단</strong>: BB Position &lt; 0.5 (하단 근처에 위치)</li>
-            <li><strong>볼린저 밴드 폭 축소</strong>: 현재 BB Width &lt; 52주 평균 (변동성 낮음)</li>
-        </ul>
-        <p><strong>투자 아이디어</strong>: 과매도 + 낮은 변동성 = 반등 가능성이 높은 종목</p>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("💡 설명 ", expanded=False):
+        st.markdown("""
+        <div class="info-box">
+            <h4>💡 스크리닝 조건</h4>
+            <p><strong>과매도 + 변동성 낮음 조건</strong>으로 반등 후보 종목을 찾습니다.</p>
+            <ul>
+                <li><strong>RSI &lt; 40</strong>: 과매도 상태 (상대강도지수 40 미만)</li>
+                <li><strong>볼린저 밴드 하단</strong>: BB Position &lt; 0.5 (하단 근처에 위치)</li>
+                <li><strong>볼린저 밴드 폭 축소</strong>: 현재 BB Width &lt; 52주 평균 (변동성 낮음)</li>
+            </ul>
+            <p><strong>투자 아이디어</strong>: 과매도 + 낮은 변동성 = 반등 가능성이 높은 종목</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 1, 2])
     with col1:
