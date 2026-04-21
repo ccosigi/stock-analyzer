@@ -259,7 +259,11 @@ def market_sentiment_tab():
 
     # ── QQQ 레버리지 전략 패널 ─────────────────────────────────────
     st.markdown("---")
-    st.markdown('<div class="sub-header">📐 QQQ 레버리지 전환 전략</div>', unsafe_allow_html=True)
+    st.markdown('''
+    <div class="sub-header" style="color: inherit;">
+        QQQ 레버리지 원칙
+    </div>
+    ''', unsafe_allow_html=True)
 
     if qqq_price is not None and qqq_high is not None:
         drop_pct = max(0.0, ((qqq_high - qqq_price) / qqq_high) * 100)
