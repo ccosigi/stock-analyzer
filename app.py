@@ -1,5 +1,8 @@
 from history_tab import history_tab
-#데이터베이스 테스트
+from market_sentiment_tab import market_sentiment_tab
+from nday_analysis_tab import nday_analysis_tab
+from sp500_screener_tab import sp500_screener_tab
+
 import streamlit as st
 import yfinance as yf
 import pandas as pd
