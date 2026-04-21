@@ -59,7 +59,7 @@ def find_consecutive_drop_periods(data, analysis_days, drop_threshold):
 def nday_analysis_tab():
     st.markdown('<div class="sub-header">📉 연속 하락 분석기</div>', unsafe_allow_html=True)
 
-    with st.expander("💡 분석 개요", expanded=False):
+    with st.expander("💡 설명", expanded=False):
         st.markdown("""
         <div class="info-box">
             <h4>💡 분석 개요</h4>
