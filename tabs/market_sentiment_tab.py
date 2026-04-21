@@ -231,11 +231,32 @@ def market_sentiment_tab():
             price_vs_sma    = "bullish" if qqq_price > qqq_sma else "bearish"
             trend_text      = "상승 추세" if price_vs_sma == "bullish" else "하락 추세"
             percentage_diff = ((qqq_price - qqq_sma) / qqq_sma) * 100
+            sma_bg     = "#d4edda" if price_vs_sma == "bullish" else "#f8d7da"
+            sma_border = "#28a745" if price_vs_sma == "bullish" else "#dc3545"
+            sma_txt    = "#155724" if price_vs_sma == "bullish" else "#721c24"
             diff_sign   = "+" if percentage_diff >= 0 else ""
             trend_arrow = "▲" if percentage_diff >= 0 else "▼"
-            sma_value = f"${qqq_price:.2f}  |  평균 ${qqq_sma:.2f}  |  {trend_arrow} {diff_sign}{percentage_diff:.1f}%"
-            sma_interp = f"{trend_text} — 200일 이동평균 {'위' if price_vs_sma == 'bullish' else '아래'}"
-            display_metric("🚀 QQQ vs 200일 이동평균", sma_value, sma_interp, price_vs_sma)
+            above_below = "위" if price_vs_sma == "bullish" else "아래"
+            st.markdown(f"""
+            <div class="metric-container" style="background:{sma_bg}; border-left-color:{sma_border};">
+                <h3 style="margin-bottom:0.5rem; color:#333;">🚀 QQQ vs 200일 이동평균</h3>
+                <div style="display:flex; gap:1.5rem; align-items:flex-end; flex-wrap:nowrap; margin-bottom:0.3rem;">
+                    <div>
+                        <p style="margin:0; font-size:0.78rem; color:#555;">현재가</p>
+                        <p style="margin:0; font-size:1.4rem; font-weight:bold; color:#000;">${qqq_price:.2f}</p>
+                    </div>
+                    <div>
+                        <p style="margin:0; font-size:0.78rem; color:#555;">200일 평균</p>
+                        <p style="margin:0; font-size:1.4rem; font-weight:bold; color:#000;">${qqq_sma:.2f}</p>
+                    </div>
+                    <div>
+                        <p style="margin:0; font-size:0.78rem; color:#555;">대비</p>
+                        <p style="margin:0; font-size:1.4rem; font-weight:bold; color:{sma_border};">{trend_arrow} {diff_sign}{percentage_diff:.1f}%</p>
+                    </div>
+                </div>
+                <p style="margin:0; font-size:1rem; color:#555;">{trend_text} — 200일 이동평균 {above_below}</p>
+            </div>
+            """, unsafe_allow_html=True)
         else:
             display_metric("🚀 QQQ vs 200일 이동평균", "N/A", "데이터 로딩 실패", "neutral")
 
