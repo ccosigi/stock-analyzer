@@ -261,7 +261,7 @@ def market_sentiment_tab():
     st.markdown("---")
     st.markdown('''
     <div class="sub-header" style="color: inherit;">
-        QQQ 레버리지 원칙
+        QQQ 레버리지 전환 원칙
     </div>
     ''', unsafe_allow_html=True)
 
