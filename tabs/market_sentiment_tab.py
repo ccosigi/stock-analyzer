@@ -227,14 +227,41 @@ def market_sentiment_tab():
         else:
             display_metric("📈 VIX (변동성 지수)", "로딩중...", "데이터 새로고침 중 (잠시 후 다시 시도)", "neutral")
 
+        # ── QQQ vs 200일 이동평균 (깔끔한 멀티-메트릭 패널) ──────────
         if qqq_price is not None and qqq_sma is not None:
-            price_vs_sma = "bullish" if qqq_price > qqq_sma else "bearish"
-            trend_text = "상승 추세" if qqq_price > qqq_sma else "하락 추세"
+            price_vs_sma   = "bullish" if qqq_price > qqq_sma else "bearish"
+            trend_text     = "상승 추세" if price_vs_sma == "bullish" else "하락 추세"
             percentage_diff = ((qqq_price - qqq_sma) / qqq_sma) * 100
-            display_metric("🚀 QQQ vs 200일 이동평균",
-                           f"현재: ${qqq_price:.2f} | 200일 평균: ${qqq_sma:.2f} ({percentage_diff:+.1f}%)",
-                           f"{trend_text} - 200일 이동평균 {'위' if qqq_price > qqq_sma else '아래'}",
-                           price_vs_sma)
+            sma_bg     = "#d4edda" if price_vs_sma == "bullish" else "#f8d7da"
+            sma_border = "#28a745" if price_vs_sma == "bullish" else "#dc3545"
+            sma_txt    = "#155724" if price_vs_sma == "bullish" else "#721c24"
+            diff_sign  = "+" if percentage_diff >= 0 else ""
+            trend_arrow = "▲" if percentage_diff >= 0 else "▼"
+            st.markdown(f"""
+            <div class="metric-container" style="background:{sma_bg}; border-left-color:{sma_border};">
+                <h3 style="margin-bottom:0.7rem; color:#333;">🚀 QQQ vs 200일 이동평균</h3>
+                <div style="display:flex; flex-wrap:wrap; gap:2rem; align-items:center;">
+                    <div>
+                        <p style="margin:0; font-size:0.82rem; color:#555;">QQQ 현재가</p>
+                        <p style="margin:0; font-size:1.6rem; font-weight:bold; color:#111;">${qqq_price:.2f}</p>
+                    </div>
+                    <div>
+                        <p style="margin:0; font-size:0.82rem; color:#555;">200일 이동평균</p>
+                        <p style="margin:0; font-size:1.6rem; font-weight:bold; color:#111;">${qqq_sma:.2f}</p>
+                    </div>
+                    <div>
+                        <p style="margin:0; font-size:0.82rem; color:#555;">200일 평균 대비</p>
+                        <p style="margin:0; font-size:1.6rem; font-weight:bold; color:{sma_border};">{trend_arrow} {diff_sign}{percentage_diff:.1f}%</p>
+                    </div>
+                    <div style="flex:1; min-width:160px;">
+                        <p style="margin:0; font-size:0.82rem; color:#555;">추세 판단</p>
+                        <p style="margin:0; font-size:1.05rem; font-weight:bold; color:{sma_txt};">
+                            {trend_text} &nbsp;—&nbsp; 200일 이동평균 {'위' if price_vs_sma == 'bullish' else '아래'}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
         else:
             display_metric("🚀 QQQ vs 200일 이동평균", "N/A", "데이터 로딩 실패", "neutral")
 
@@ -261,7 +288,7 @@ def market_sentiment_tab():
     st.markdown("---")
     st.markdown('''
     <div class="sub-header" style="color: inherit;">
-        나스닥으로 부자 되기 😀
+        QQQ 레버리지 전환 원칙
     </div>
     ''', unsafe_allow_html=True)
 
