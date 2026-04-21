@@ -36,7 +36,11 @@ def zscore_to_100(col):
     return ((z + 3) / 6 * 100).clip(0, 100)
 
 def history_tab():
-    st.markdown('<div class="sub-header">📈 일별 시장 지표 히스토리</div>', unsafe_allow_html=True)
+    st.markdown('''
+    <div class="sub-header" style="color: inherit;">
+        📊 지표 추이 비교
+    </div>
+    ''', unsafe_allow_html=True)
 
     df = load_history()
 
@@ -44,7 +48,6 @@ def history_tab():
         st.warning("아직 수집된 데이터가 없습니다.")
         return
 
-    st.subheader("📊 지표 추이 비교")
 
     available = {k: v for k, v in CHART_COLS.items() if k in df.columns}
 
