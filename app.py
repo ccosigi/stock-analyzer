@@ -597,6 +597,19 @@ def display_metric(title, value, interpretation, sentiment):
 
 def market_sentiment_tab():
     st.markdown('<div class="sub-header">📊 실시간 시장 지표</div>', unsafe_allow_html=True)
+    qqq_price, qqq_sma = get_qqq_data()
+    vix = get_vix_data()
+    fgi = fetch_fgi()
+    pci = fetch_pci()
+    usd_krw_rate, usd_krw_change_amount, usd_krw_change_pct = get_usd_krw_rate()
+        
+        
+    try:
+         spy_data = yf.Ticker("SPY").history(period="50d")["Close"]
+        rsi = calculate_rsi_basic(spy_data)
+    except:
+        rsi = None
+
 
     col1, col2 = st.columns([1, 1])
     
