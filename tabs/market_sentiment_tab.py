@@ -212,33 +212,47 @@ def market_sentiment_tab():
     except:
         rsi = None
 
-    col1, col2 = st.columns([1, 1])
-
-    with col1:
+    # ── 1행: 공포탐욕 / Put-Call / VIX (3열) ───────────────────────
+    r1c1, r1c2, r1c3 = st.columns([1, 1, 1])
+    with r1c1:
         if fgi is not None:
             fgi_interp, fgi_sentiment = interpret_fgi(fgi)
             display_metric("😨 공포 & 탐욕 지수", f"{fgi}/100", fgi_interp, fgi_sentiment)
         else:
             display_metric("😨 공포 & 탐욕 지수", "N/A", "데이터 로딩 실패", "neutral")
-
+    with r1c2:
+        if pci is not None:
+            pci_interp, pci_sentiment = interpret_pci(pci)
+            display_metric("⚖️ Put/Call 비율", f"{pci:.3f}", pci_interp, pci_sentiment)
+        else:
+            display_metric("⚖️ Put/Call 비율", "N/A", "데이터 로딩 실패", "neutral")
+    with r1c3:
         if vix is not None:
             vix_interp, vix_sentiment = interpret_vix(vix)
             display_metric("📈 VIX (변동성 지수)", f"{vix:.2f}", vix_interp, vix_sentiment)
         else:
             display_metric("📈 VIX (변동성 지수)", "로딩중...", "데이터 새로고침 중 (잠시 후 다시 시도)", "neutral")
 
+    # ── 2행: RSI(좌) / QQQ 200일(우, 넓게) ─────────────────────────
+    r2c1, r2c2 = st.columns([1, 2])
+    with r2c1:
+        if rsi is not None:
+            rsi_interp, rsi_sentiment = interpret_rsi(rsi)
+            display_metric("📊 RSI (S&P500)", f"{rsi:.1f}", rsi_interp, rsi_sentiment)
+        else:
+            display_metric("📊 RSI (S&P500)", "N/A", "데이터 로딩 실패", "neutral")
+    with r2c2:
         if qqq_price is not None and qqq_sma is not None:
             price_vs_sma    = "bullish" if qqq_price > qqq_sma else "bearish"
             trend_text      = "상승 추세" if price_vs_sma == "bullish" else "하락 추세"
             percentage_diff = ((qqq_price - qqq_sma) / qqq_sma) * 100
             sma_bg     = "#d4edda" if price_vs_sma == "bullish" else "#f8d7da"
             sma_border = "#28a745" if price_vs_sma == "bullish" else "#dc3545"
-            sma_txt    = "#155724" if price_vs_sma == "bullish" else "#721c24"
             diff_sign   = "+" if percentage_diff >= 0 else ""
             trend_arrow = "▲" if percentage_diff >= 0 else "▼"
             above_below = "위" if price_vs_sma == "bullish" else "아래"
             st.markdown(f"""
-            <div class="metric-container" style="background:{sma_bg}; border-left-color:{sma_border}; min-height:160px;">
+            <div class="metric-container" style="background:{sma_bg}; border-left-color:{sma_border};">
                 <h3 style="margin-bottom:0.5rem; color:#333;">🚀 QQQ vs 200일 이동평균</h3>
                 <div style="display:flex; gap:1.5rem; align-items:flex-end; flex-wrap:nowrap; margin-bottom:0.3rem;">
                     <div>
@@ -260,25 +274,6 @@ def market_sentiment_tab():
         else:
             display_metric("🚀 QQQ vs 200일 이동평균", "N/A", "데이터 로딩 실패", "neutral")
 
-    with col2:
-        if pci is not None:
-            pci_interp, pci_sentiment = interpret_pci(pci)
-            display_metric("⚖️ Put/Call 비율", f"{pci:.3f}", pci_interp, pci_sentiment)
-        else:
-            display_metric("⚖️ Put/Call 비율", "N/A", "데이터 로딩 실패", "neutral")
-
-        if rsi is not None:
-            rsi_interp, rsi_sentiment = interpret_rsi(rsi)
-            display_metric("📊 RSI (S&P500)", f"{rsi:.1f}", rsi_interp, rsi_sentiment)
-        else:
-            display_metric("📊 RSI (S&P500)", "N/A", "데이터 로딩 실패", "neutral")
-
-        if usd_krw_rate is not None:
-            usd_krw_interp, usd_krw_sentiment = interpret_usd_krw(usd_krw_rate, usd_krw_change_amount, usd_krw_change_pct)
-            display_metric("🔁 원달러 환율", f"₩{usd_krw_rate:.2f}", usd_krw_interp, usd_krw_sentiment)
-        else:
-            display_metric("🔁 원달러 환율", "N/A", "데이터 로딩 실패", "neutral")
-
     # ── QQQ 레버리지 전략 패널 ─────────────────────────────────────
     st.markdown("---")
     st.markdown('''
@@ -291,7 +286,15 @@ def market_sentiment_tab():
         drop_pct = max(0.0, ((qqq_high - qqq_price) / qqq_high) * 100)
         stage_label, portfolio, summary_bg, border_color, txt_color = get_leverage_strategy(drop_pct)
 
-        st.markdown(f"""
+        lev_col, usd_col = st.columns([3, 1])
+        with usd_col:
+            if usd_krw_rate is not None:
+                usd_krw_interp, usd_krw_sentiment = interpret_usd_krw(usd_krw_rate, usd_krw_change_amount, usd_krw_change_pct)
+                display_metric("🔁 원달러 환율", f"₩{usd_krw_rate:.2f}", usd_krw_interp, usd_krw_sentiment)
+            else:
+                display_metric("🔁 원달러 환율", "N/A", "데이터 로딩 실패", "neutral")
+        with lev_col:
+            st.markdown(f"""
         <div class="metric-container" style="background:{summary_bg}; border-left-color:{border_color};">
             <div style="display:flex; flex-wrap:wrap; gap:2rem; align-items:center;">
                 <div>
