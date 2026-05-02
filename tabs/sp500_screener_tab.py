@@ -228,16 +228,16 @@ def sp500_screener_tab():
             for i, stock in enumerate(qualifying_stocks[:3], 1):
                 stock_info = get_stock_info(stock['ticker'])
                 st.markdown(f"""
-                <div class="stock-highlight" style="color: inherit;">
-                    <h4 style="color: inherit;">#{i} {stock['ticker']} - {stock_info['name']}</h4>
-                    <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; color: inherit;">
+                <div class="stock-highlight" style="color: #000;">
+                    <h4 style="color: #000;">#{i} {stock['ticker']} - {stock_info['name']}</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; color: #000;">
                         <div><strong>💰 현재가:</strong> ${stock['price']:.2f}</div>
                         <div><strong>📊 RSI:</strong> {stock['rsi']:.1f}</div>
                         <div><strong>🎯 BB Position:</strong> {stock['bb_position']:.3f}</div>
                         <div><strong>📏 BB Width:</strong> {stock['bb_width']:.4f}</div>
                         <div><strong>🏢 섹터:</strong> {stock_info['sector']}</div>
                     </div>
-                    <p style="margin-top: 8px; color: inherit; opacity: 0.7; font-size: 0.9rem;">
+                    <p style="margin-top: 8px; color: #333; font-size: 0.9rem;">
                         하단밴드: ${stock['lower_band']:.2f} | 20일평균: ${stock['sma']:.2f} | 상단밴드: ${stock['upper_band']:.2f}
                     </p>
                 </div>
@@ -250,15 +250,15 @@ def sp500_screener_tab():
 
             if avg_rsi < 30 and avg_bb_pos < 0.3:
                 sc, st_title = "lose-box", "🟢 강력한 매수 신호"
-                st_text = f"<p style='color: inherit;'>평균 RSI({avg_rsi:.1f})와 BB Position({avg_bb_pos:.3f})이 모두 매우 낮습니다.</p><p style='color: inherit;'>💡 <strong>전략</strong>: 단계적 매수를 통해 리스크를 분산하고, 반등 시점을 노려보세요.</p>"
+                st_text = f"<p style='color: #000;'>평균 RSI({avg_rsi:.1f})와 BB Position({avg_bb_pos:.3f})이 모두 매우 낮습니다.</p><p style='color: #000;'>💡 <strong>전략</strong>: 단계적 매수를 통해 리스크를 분산하고, 반등 시점을 노려보세요.</p>"
             elif avg_rsi < 35 and avg_bb_pos < 0.4:
                 sc, st_title = "result-box", "🟡 매수 고려 신호"
-                st_text = f"<p style='color: inherit;'>과매도 상태에 근접해 있습니다 (평균 RSI: {avg_rsi:.1f}, BB Position: {avg_bb_pos:.3f}).</p><p style='color: inherit;'>💡 <strong>전략</strong>: 추가적인 기본 분석과 함께 신중한 매수를 고려해보세요.</p>"
+                st_text = f"<p style='color: #000;'>과매도 상태에 근접해 있습니다 (평균 RSI: {avg_rsi:.1f}, BB Position: {avg_bb_pos:.3f}).</p><p style='color: #000;'>💡 <strong>전략</strong>: 추가적인 기본 분석과 함께 신중한 매수를 고려해보세요.</p>"
             else:
                 sc, st_title = "metric-container", "⚖️ 신중한 접근"
-                st_text = f"<p style='color: inherit;'>조건을 만족하지만 극도의 과매도는 아닙니다 (평균 RSI: {avg_rsi:.1f}).</p><p style='color: inherit;'>💡 <strong>전략</strong>: 시장 상황과 개별 종목 펀더멘털을 종합적으로 검토하세요.</p>"
+                st_text = f"<p style='color: #000;'>조건을 만족하지만 극도의 과매도는 아닙니다 (평균 RSI: {avg_rsi:.1f}).</p><p style='color: #000;'>💡 <strong>전략</strong>: 시장 상황과 개별 종목 펀더멘털을 종합적으로 검토하세요.</p>"
 
-            st.markdown(f'<div class="{sc}" style="color: inherit;"><h4 style="color: inherit;">{st_title}</h4>{st_text}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="{sc}" style="color: #000;"><h4 style="color: #000;">{st_title}</h4>{st_text}</div>', unsafe_allow_html=True)
 
         else:
             st.warning(f"""
