@@ -218,8 +218,8 @@ def sp500_screener_tab():
                 return ''
 
             styled_df = results_df.style \
-                .applymap(highlight_good_rsi,    subset=['RSI']) \
-                .applymap(highlight_bb_position, subset=['BB Position'])
+                .map(highlight_good_rsi,    subset=['RSI']) \
+                .map(highlight_bb_position, subset=['BB Position'])
             st.dataframe(styled_df, use_container_width=True, height=600)
 
             st.markdown("---")
