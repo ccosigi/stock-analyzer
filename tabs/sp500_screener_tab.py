@@ -300,4 +300,8 @@ def sp500_screener_tab():
                     </ul>
                 </li>
             </ul>
-            <p style="margin-top: 0
+            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #6c757d;">
+                ⚠️ <strong>주의</strong>: 이 분석은 기술적 지표만을 고려합니다. 실제 투자 시에는 기본 분석, 시장 상황, 뉴스 등을 종합적으로 고려하세요.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
