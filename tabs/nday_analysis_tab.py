@@ -264,8 +264,8 @@ def nday_analysis_tab():
                         return ''
 
                     styled_df = display_data.style \
-                        .applymap(color_result, subset=['결과']) \
-                        .applymap(color_change, subset=[f'{days_after}일간변화(%)'])
+                        .map(color_result, subset=['결과']) \
+                        .map(color_change, subset=[f'{days_after}일간변화(%)'])
                     st.dataframe(styled_df, use_container_width=True)
 
                 st.markdown("---")
