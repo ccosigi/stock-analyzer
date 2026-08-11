@@ -74,24 +74,59 @@ def fetch_fgi():
 
 @st.cache_data(ttl=300)
 def fetch_pci():
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+    
+    # 1시도: StockAnalysis (Cloudflare 차단율이 매우 낮고 데이터 업데이트가 빠른 소스)
     try:
-        # CBOE Total Put/Call Ratio 지수 심볼 (^PCR)
-        pci_ticker = yf.Ticker("^PCR")
-        data = pci_ticker.history(period="5d")
-        
-        if not data.empty and len(data) > 0:
-            return float(data['Close'].iloc[-1])
-            
-        # ^PCR 데이터가 비어있을 경우 예비 심볼 (^EQUITYPCR)
-        pci_eq = yf.Ticker("^EQUITYPCR")
-        data_eq = pci_eq.history(period="5d")
-        if not data_eq.empty and len(data_eq) > 0:
-            return float(data_eq['Close'].iloc[-1])
-            
-        return None
+        url = "https://stockanalysis.com/markets/indicators/put-call-ratio/"
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 200:
+            soup = BeautifulSoup(res.text, 'html.parser')
+            # 메인 수치가 들어있는 대형 텍스트 태그 검색
+            val_elem = soup.find('div', class_='text-4xl') or soup.find('div', class_='text-3xl')
+            if val_elem:
+                val = float(val_elem.text.strip())
+                return val
     except Exception:
-        return None
+        pass
 
+    # 2시도: Barchart API Endpoint 직접 파싱
+    try:
+        url = "https://www.barchart.com/proxies/core-api/v1/quotes/get"
+        params = {"symbols": "$PCRATIO", "fields": "lastPrice"}
+        barchart_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Referer": "https://www.barchart.com/options/volume-change/put-call-ratios"
+        }
+        res = requests.get(url, headers=barchart_headers, params=params, timeout=5)
+        if res.status_code == 200:
+            json_data = res.json()
+            val = json_data['data'][0]['raw']['lastPrice']
+            return float(val)
+    except Exception:
+        pass
+
+    # 3시도: Alpha Query / Investopedia 페이지 파싱
+    try:
+        url = "https://www.alphaquery.com/data/stock-option-market-statistics"
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 200:
+            soup = BeautifulSoup(res.text, 'html.parser')
+            table = soup.find('table')
+            if table:
+                for row in table.find_all('tr'):
+                    text = row.text
+                    if 'Put/Call Ratio' in text or 'Put Call Ratio' in text:
+                        cols = row.find_all('td')
+                        if cols:
+                            return float(cols[-1].text.strip().replace(',', ''))
+    except Exception:
+        pass
+
+    return None
 
 # ── 해석 함수 ────────────────────────────────────────────────────────
 
