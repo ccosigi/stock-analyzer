@@ -72,22 +72,33 @@ def fetch_fgi():
     except Exception:
         return None
 
-@st.cache_data(ttl=300)
 def fetch_pci():
     try:
-        url = 'https://ycharts.com/indicators/cboe_equity_put_call_ratio'
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        url = "https://ycharts.com/indicators/cboe_equity_put_call_ratio"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+
         response = requests.get(url, headers=headers, timeout=10)
+
+        print("status:", response.status_code)
+        print("length:", len(response.text))
+        print(response.text[:1000])
+
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-        td_elements = soup.find_all('td', class_='col-6')
+
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        td_elements = soup.find_all("td", class_="col-6")
+        print("td 개수:", len(td_elements))
+
         for td in td_elements:
-            try:
-                return float(td.text.strip().replace(',', ''))
-            except ValueError:
-                continue
+            print("td:", td.get_text(strip=True))
+
         return None
-    except Exception:
+
+    except Exception as e:
+        print("PCI 오류:", e)
         return None
 # ── 해석 함수 ────────────────────────────────────────────────────────
 
