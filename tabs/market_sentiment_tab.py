@@ -95,27 +95,33 @@ def fetch_pci():
 
 def interpret_fgi(fgi):
     if fgi is None:
-        return "데이터 없음", "neutral"
-    if fgi <= 25:
-        return "극심한 공포 (매수 신호)", "bearish"
-    elif fgi <= 45:
-        return "공포 (매수 신호)", "bearish"
-    elif fgi <= 55:
-        return "중립적 (유지 또는 관망)", "neutral"
-    elif fgi <= 75:
-        return "탐욕적 (매도 신호)", "bullish"
+        return "데이터 없음", "neutral", None
+
+    if fgi <= 21.26:
+        return "극심한 공포 (강력 매수)", "bearish"
+    elif fgi <= 37.40:
+        return "공포 (분할 매수)", "bearish"
+    elif fgi <= 53.06:
+        return "중립 (관망 / 보유)", "neutral"
+    elif fgi <= 68.63:
+        return "탐욕 (1차 현금화)", "bullish"
     else:
-        return "극도로 탐욕적 (매도 신호)", "bullish"
+        return "극도의 탐욕 (2차 현금화 / 매수 자제)", "bullish"
+
 
 def interpret_vix(vix):
     if vix is None:
-        return "데이터 없음", "neutral"
-    if vix < 15:
-        return "변동성 낮음 (상승장) 매도 신호", "bullish"
-    elif vix < 25:
-        return "변동성 중간 (중립)", "neutral"
+        return "데이터 없음", "neutral", None
+    if vix >= 50.91:
+        return "극단적 패닉 (강력 매수)", "bearish"
+    elif vix >= 28.85:
+        return "높은 공포 (분할 매수)", "bearish"
+    elif vix >= 20.98:
+        return "중간 변동성 (관망)", "neutral"
+    elif vix >= 15.30:
+        return "안정세 (1차 현금화)", "bullish"
     else:
-        return "변동성 높음 (하락장) 매수 신호", "bearish"
+        return "극심한 안도 (2차 현금화 / 과열)", "bullish"
 
 def interpret_pci(pci):
     if pci is None:
@@ -126,16 +132,20 @@ def interpret_pci(pci):
         return "상승 베팅 증가 (매도 신호)", "bullish"
     else:
         return "중립적 상태", "neutral"
-
+        
 def interpret_rsi(rsi):
     if rsi is None:
-        return "데이터 없음", "neutral"
-    if rsi < 30:
-        return "과매도 (매수 신호)", "bearish"
-    elif rsi > 70:
-        return "과매수 (매도 신호)", "bullish"
+        return "데이터 없음", "neutral", None
+    if rsi <= 41.66:
+        return "과매도 진입 (강력 매수)", "bearish"
+    elif rsi <= 51.62:
+        return "약세/공포 (분할 매수)", "bearish"
+    elif rsi <= 60.32:
+        return "중립 (관망 / 보유)", "neutral"
+    elif rsi <= 69.00:
+        return "과열 진입 (1차 현금화)", "bullish"
     else:
-        return "중립", "neutral"
+        return "극도 과열 (2차 현금화 / 매수 자제)", "bullish"
 
 def interpret_usd_krw(rate, change_amount, change_pct):
     if rate is None:
