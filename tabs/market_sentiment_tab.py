@@ -75,17 +75,19 @@ def fetch_fgi():
 @st.cache_data(ttl=300)
 def fetch_pci():
     try:
-        url = 'https://ycharts.com/indicators/cboe_equity_put_call_ratio'
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-        td_elements = soup.find_all('td', class_='col-6')
-        for td in td_elements:
-            try:
-                return float(td.text.strip().replace(',', ''))
-            except ValueError:
-                continue
+        # CBOE Total Put/Call Ratio 지수 심볼 (^PCR)
+        pci_ticker = yf.Ticker("^PCR")
+        data = pci_ticker.history(period="5d")
+        
+        if not data.empty and len(data) > 0:
+            return float(data['Close'].iloc[-1])
+            
+        # ^PCR 데이터가 비어있을 경우 예비 심볼 (^EQUITYPCR)
+        pci_eq = yf.Ticker("^EQUITYPCR")
+        data_eq = pci_eq.history(period="5d")
+        if not data_eq.empty and len(data_eq) > 0:
+            return float(data_eq['Close'].iloc[-1])
+            
         return None
     except Exception:
         return None
