@@ -72,34 +72,30 @@ def fetch_fgi():
     except Exception:
         return None
 
-@st.cache_data(ttl=300)
+@@st.cache_data(ttl=300)
 def fetch_pci():
     try:
-        # MarketWatch의 CBOE Put/Call Ratio 지수 페이지 ($PCR)
-        url = 'https://www.marketwatch.com/investing/index/pcr'
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"}
+        url = "https://ycharts.com/indicators/cboe_equity_put_call_ratio"
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                          "AppleWebKit/537.36 (KHTML, like Gecko) "
+                          "Chrome/151.0.0.0 Safari/537.36"
+        }
+
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
 
-        # 1. MarketWatch의 메타 태그 price 속성 파싱
-        meta_price = soup.find("meta", {"name": "price"})
-        if meta_price and meta_price.get("content"):
-            try:
-                return float(meta_price["content"])
-            except ValueError:
-                pass
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        # 2. bg-quote 태그 순회 파싱 (기존 원본 순회 로직과 동일)
-        quotes = soup.find_all('bg-quote', {'field': 'Last'})
-        for q in quotes:
-            try:
-                val_str = q.text.strip().replace(',', '').split()[0]
-                return float(val_str)
-            except (ValueError, IndexError):
-                continue
+        element = soup.find("div", class_="key-stat-title")
+
+        if element:
+            text = element.get_text(" ", strip=True)
+            return round(float(text.split()[0]), 2)
 
         return None
+
     except Exception:
         return None
 # ── 해석 함수 ────────────────────────────────────────────────────────
