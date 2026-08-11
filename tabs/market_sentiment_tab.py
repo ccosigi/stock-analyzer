@@ -74,46 +74,21 @@ def fetch_fgi():
 
 @st.cache_data(ttl=300)
 def fetch_pci():
-    # 1순위: CNN API (가장 안정적이고 CBOE 공식 수치와 동일한 범위)
     try:
-        url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Accept": "application/json"
-        }
-        res = requests.get(url, headers=headers, timeout=5)
-        if res.status_code == 200:
-            data = res.json()
-            # put_call 데이터 중 가장 마지막(최신) 'y' 값 추출
-            pci_data = data.get('put_call', {}).get('data', [])
-            if pci_data:
-                latest_pci = float(pci_data[-1]['y'])
-                # 정상적인 수치(0.1 ~ 3.0 범위)일 때만 반환
-                if 0.1 <= latest_pci <= 3.0:
-                    return round(latest_pci, 3)
+        url = 'https://ycharts.com/indicators/cboe_equity_put_call_ratio'
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        td_elements = soup.find_all('td', class_='col-6')
+        for td in td_elements:
+            try:
+                return float(td.text.strip().replace(',', ''))
+            except ValueError:
+                continue
+        return None
     except Exception:
-        pass
-
-    # 2순위: Alpha Query 스크래핑 (CNN 실패 시 예비용)
-    try:
-        url = "https://www.alphaquery.com/data/stock-option-market-statistics"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        res = requests.get(url, headers=headers, timeout=5)
-        if res.status_code == 200:
-            soup = BeautifulSoup(res.text, 'html.parser')
-            table = soup.find('table')
-            if table:
-                for row in table.find_all('tr'):
-                    if 'Put/Call Ratio' in row.text or 'Put Call Ratio' in row.text:
-                        cols = row.find_all('td')
-                        if cols:
-                            val = float(cols[-1].text.strip().replace(',', ''))
-                            if val != 1.0: # 비정상 1.0 제외
-                                return round(val, 3)
-    except Exception:
-        pass
-
-    return None
+        return None
 # ── 해석 함수 ────────────────────────────────────────────────────────
 
 def interpret_fgi(fgi):
