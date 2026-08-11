@@ -72,35 +72,23 @@ def fetch_fgi():
     except Exception:
         return None
 
+@st.cache_data(ttl=300)
 def fetch_pci():
     try:
-        url = "https://ycharts.com/indicators/cboe_equity_put_call_ratio"
-
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                          "AppleWebKit/537.36 (KHTML, like Gecko) "
-                          "Chrome/151.0.0.0 Safari/537.36"
-        }
-
+        url = 'https://ycharts.com/indicators/cboe_equity_put_call_ratio'
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
         response = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        element = soup.find("div", class_="key-stat-title")
-
-        if element:
-            text = element.get_text(" ", strip=True)
-            st.write("찾음:", text)
-            return float(text.split()[0])
-
-        st.write("key-stat-title을 못 찾음")
-        st.write("HTML에 key-stat-title 포함:", "key-stat-title" in response.text)
-
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        td_elements = soup.find_all('td', class_='col-6')
+        for td in td_elements:
+            try:
+                return float(td.text.strip().replace(',', ''))
+            except ValueError:
+                continue
         return None
-
-    except Exception as e:
-        st.write("오류:", str(e))
+    except Exception:
         return None
-
 # ── 해석 함수 ────────────────────────────────────────────────────────
 
 def interpret_fgi(fgi):
