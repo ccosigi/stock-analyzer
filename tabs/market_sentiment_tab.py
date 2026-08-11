@@ -74,29 +74,28 @@ def fetch_fgi():
 
 @st.cache_data(ttl=300)
 def fetch_pci():
-    try:
-        url = "https://ycharts.com/indicators/cboe_equity_put_call_ratio"
+    url = "https://ycharts.com/indicators/cboe_equity_put_call_ratio"
 
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                          "AppleWebKit/537.36 (KHTML, like Gecko) "
-                          "Chrome/151.0.0.0 Safari/537.36"
-        }
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    }
 
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
+    response = requests.get(url, headers=headers, timeout=10)
 
-        soup = BeautifulSoup(response.text, "html.parser")
+    soup = BeautifulSoup(response.text, "html.parser")
 
-        element = soup.find("div", class_="key-stat-title")
+    element = soup.find("div", class_="key-stat-title")
 
-        if element:
-            text = element.get_text(" ", strip=True)
-            return round(float(text.split()[0]), 2)
-
+    if element is None:
         return None
 
-    except Exception:
+    text = element.get_text(" ", strip=True)
+
+    st.write("PCI HTML:", text)
+
+    try:
+        return float(text.split()[0])
+    except:
         return None
 
 
