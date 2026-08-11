@@ -75,28 +75,32 @@ def fetch_fgi():
 @st.cache_data(ttl=300)
 def fetch_pci():
     try:
-        url = "https://ycharts.com/indicators/cboe_equity_put_call_ratio"
-
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                          "AppleWebKit/537.36 (KHTML, like Gecko) "
-                          "Chrome/151.0.0.0 Safari/537.36"
-        }
-
+        url = 'https://ycharts.com/indicators/cboe_equity_put_call_ratio'
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-        soup = BeautifulSoup(response.text, "html.parser")
+        # 1. key-stat-title 영역 우선 파싱 ("0.61 for Aug 10 2026" 형태)
+        key_stat = soup.find('div', class_='key-stat-title')
+        if key_stat:
+            try:
+                # 공백 기준 첫 번째 단어("0.61")만 잘라내어 float 변환
+                return float(key_stat.text.strip().split()[0])
+            except (ValueError, IndexError):
+                pass
 
-        element = soup.find(class_="key-stat-title")
-
-        if element:
-            return round(float(element.get_text(strip=True)), 2)
+        # 2. 기존 원본 로직 (td.col-6 순회)
+        td_elements = soup.find_all('td', class_='col-6')
+        for td in td_elements:
+            try:
+                val_str = td.text.strip().replace(',', '').split()[0]
+                return float(val_str)
+            except (ValueError, IndexError):
+                continue
 
         return None
-
-    except Exception as e:
-        print("PCI 오류:", e)
+    except Exception:
         return None
 # ── 해석 함수 ────────────────────────────────────────────────────────
 
