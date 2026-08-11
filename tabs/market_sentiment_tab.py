@@ -72,7 +72,7 @@ def fetch_fgi():
     except Exception:
         return None
 
-@@st.cache_data(ttl=300)
+@st.cache_data(ttl=300)
 def fetch_pci():
     try:
         url = "https://ycharts.com/indicators/cboe_equity_put_call_ratio"
@@ -98,6 +98,8 @@ def fetch_pci():
 
     except Exception:
         return None
+
+
 # ── 해석 함수 ────────────────────────────────────────────────────────
 
 def interpret_fgi(fgi):
