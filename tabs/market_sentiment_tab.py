@@ -74,18 +74,43 @@ def fetch_fgi():
 
 @st.cache_data(ttl=300)
 def fetch_pci():
+    """
+    CBOE가 공식 제공하는 Equity Put/Call Ratio CSV에서
+    가장 최근 값을 가져온다.
+    (ycharts 스크래핑 대신 안정적인 CBOE 공식 데이터 사용)
+    """
     try:
-        url = 'https://ycharts.com/indicators/cboe_equity_put_call_ratio'
+        url = 'https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/equitypc.csv'
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-        td_elements = soup.find_all('td', class_='col-6')
-        for td in td_elements:
-            try:
-                return float(td.text.strip().replace(',', ''))
-            except ValueError:
+
+        lines = response.text.strip().splitlines()
+
+        # 헤더 라인(DATE,CALL,PUT,TOTAL,P/C Ratio) 위치 찾기
+        header_idx = None
+        for i, line in enumerate(lines):
+            if line.strip().upper().startswith('DATE,'):
+                header_idx = i
+                break
+        if header_idx is None:
+            return None
+
+        data_lines = lines[header_idx + 1:]
+
+        # 파일 맨 끝부터 거꾸로 탐색하며, 값이 온전한 마지막 행을 사용
+        # (당일 데이터가 아직 업데이트 중이거나 빈 줄이 있을 수 있음)
+        for line in reversed(data_lines):
+            if not line.strip():
                 continue
+            parts = [p.strip() for p in line.split(',')]
+            if len(parts) >= 5:
+                try:
+                    pci = float(parts[4])
+                    return pci
+                except ValueError:
+                    continue
+
         return None
     except Exception:
         return None
