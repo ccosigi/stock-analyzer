@@ -74,11 +74,7 @@ def fetch_fgi():
 
 @st.cache_data(ttl=300)
 def fetch_pci():
-    """
-    CBOE가 공식 제공하는 Equity Put/Call Ratio CSV에서
-    가장 최근 값을 가져온다.
-    (ycharts 스크래핑 대신 안정적인 CBOE 공식 데이터 사용)
-    """
+   
     try:
         url = 'https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/equitypc.csv'
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
@@ -98,8 +94,6 @@ def fetch_pci():
 
         data_lines = lines[header_idx + 1:]
 
-        # 파일 맨 끝부터 거꾸로 탐색하며, 값이 온전한 마지막 행을 사용
-        # (당일 데이터가 아직 업데이트 중이거나 빈 줄이 있을 수 있음)
         for line in reversed(data_lines):
             if not line.strip():
                 continue
