@@ -95,22 +95,37 @@ def fetch_fgi():
         pass
     return None
 
-
 def fetch_pci():
-    """ycharts Put/Call 비율 스크래핑"""
     try:
-        url  = "https://ycharts.com/indicators/cboe_equity_put_call_ratio"
-        hdrs = {"User-Agent": "Mozilla/5.0"}
-        res  = requests.get(url, headers=hdrs, timeout=10)
-        soup = BeautifulSoup(res.text, "html.parser")
-        for td in soup.find_all("td", class_="col-6"):
-            try:
-                return round(float(td.text.strip().replace(",", "")), 4)
-            except ValueError:
+        url = "https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/equitypc.csv"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        res = requests.get(url, headers=headers, timeout=10)
+        res.raise_for_status()
+
+        lines = res.text.strip().splitlines()
+
+        header_idx = None
+        for i, line in enumerate(lines):
+            if line.strip().upper().startswith("DATE,"):
+                header_idx = i
+                break
+        if header_idx is None:
+            return None
+
+        
+        for line in reversed(lines[header_idx + 1:]):
+            if not line.strip():
                 continue
+            parts = [p.strip() for p in line.split(",")]
+            if len(parts) >= 5:
+                try:
+                    return round(float(parts[4]), 4)
+                except ValueError:
+                    continue
+
+        return None
     except Exception:
-        pass
-    return None
+        return None
 
 def collect() -> dict:
     now = datetime.now(timezone.utc)
