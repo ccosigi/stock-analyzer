@@ -97,36 +97,34 @@ def fetch_fgi():
 
 def fetch_pci():
     try:
-        url = "https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/equitypc.csv"
+        url = "https://www.cboe.com/markets/us/options/market-statistics/daily/"
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
         res = requests.get(url, headers=headers, timeout=10)
         res.raise_for_status()
+        html = res.text
 
-        lines = res.text.strip().splitlines()
+        soup = BeautifulSoup(html, "html.parser")
 
-        header_idx = None
-        for i, line in enumerate(lines):
-            if line.strip().upper().startswith("DATE,"):
-                header_idx = i
-                break
-        if header_idx is None:
-            return None
-
-        
-        for line in reversed(lines[header_idx + 1:]):
-            if not line.strip():
-                continue
-            parts = [p.strip() for p in line.split(",")]
-            if len(parts) >= 5:
+        for row in soup.find_all("tr"):
+            cells = [c.get_text(strip=True) for c in row.find_all(["td", "th"])]
+            if len(cells) >= 2 and "EQUITY PUT/CALL RATIO" in cells[0].upper():
                 try:
-                    return round(float(parts[4]), 4)
+                    return round(float(cells[1]), 4)
                 except ValueError:
-                    continue
+                    return None
+
+        # 백업: 표 파싱 실패 시 정규식으로 재시도
+        m = re.search(
+            r'EQUITY\s*PUT\s*/\s*CALL\s*RATIO\s*(?:</[^>]+>\s*)*<[^>]+>\s*([0-9]+\.[0-9]+)',
+            html, re.IGNORECASE
+        )
+        if m:
+            return round(float(m.group(1)), 4)
 
         return None
     except Exception:
         return None
-
+        
 def collect() -> dict:
     now = datetime.now(timezone.utc)
     print(f"[{now.strftime('%Y-%m-%d %H:%M:%S')} UTC] 지표 수집 시작")
