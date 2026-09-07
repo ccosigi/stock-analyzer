@@ -1,6 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import requests
+import re
 from bs4 import BeautifulSoup
 from datetime import datetime
 import numpy as np
@@ -74,37 +75,23 @@ def fetch_fgi():
 
 @st.cache_data(ttl=300)
 def fetch_pci():
-   
     try:
-        url = 'https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/equitypc.csv'
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        url = "https://www.cboe.com/markets/us/options/market-statistics/daily/"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
+        text = response.text
 
-        lines = response.text.strip().splitlines()
-
-        # 헤더 라인(DATE,CALL,PUT,TOTAL,P/C Ratio) 위치 찾기
-        header_idx = None
-        for i, line in enumerate(lines):
-            if line.strip().upper().startswith('DATE,'):
-                header_idx = i
-                break
-        if header_idx is None:
-            return None
-
-        data_lines = lines[header_idx + 1:]
-
-        for line in reversed(data_lines):
-            if not line.strip():
-                continue
-            parts = [p.strip() for p in line.split(',')]
-            if len(parts) >= 5:
-                try:
-                    pci = float(parts[4])
-                    return pci
-                except ValueError:
-                    continue
-
+        # "EQUITY PUT/CALL RATIO" 뒤에 나오는 숫자 추출
+        match = re.search(
+            r'EQUITY\s*PUT\s*/\s*CALL\s*RATIO[^0-9\-]{0,50}([0-9]+\.[0-9]+)',
+            text,
+            re.IGNORECASE | re.DOTALL
+        )
+        if match:
+            return float(match.group(1))
         return None
     except Exception:
         return None
