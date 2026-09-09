@@ -95,6 +95,26 @@ def fetch_pci():
         return None
     except Exception:
         return None
+
+@st.cache_data(ttl=60)
+def get_qqq_rsi_wilder(period_days=100, window=14):
+    """QQQ 종가 기준, Wilder's Smoothing(EMA) 방식 RSI.
+    백테스트(qqq_vix_rsi_10years.csv 생성 스크립트)와 동일한 계산식."""
+    try:
+        qqq_close = yf.Ticker("QQQ").history(period=f"{period_days}d")["Close"]
+        if qqq_close.empty or len(qqq_close) < window + 1:
+            return None
+        delta = qqq_close.diff()
+        gain = delta.clip(lower=0)
+        loss = -delta.clip(upper=0)
+        avg_gain = gain.ewm(alpha=1 / window, adjust=False).mean()
+        avg_loss = loss.ewm(alpha=1 / window, adjust=False).mean()
+        rs = avg_gain / avg_loss
+        rsi_series = 100 - (100 / (1 + rs))
+        return rsi_series.iloc[-1] if not rsi_series.empty else None
+    except Exception:
+        return None
+
 # ── 해석 함수 ────────────────────────────────────────────────────────
 
 def interpret_fgi(fgi):
@@ -215,16 +235,7 @@ def market_sentiment_tab():
     pci = fetch_pci()
     usd_krw_rate, usd_krw_change_amount, usd_krw_change_pct = get_usd_krw_rate()
 
-    try:
-        spy_data = yf.Ticker("SPY").history(period="50d")["Close"]
-        delta = spy_data.diff()
-        gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-        rs = gain / loss
-        rsi_series = 100 - (100 / (1 + rs))
-        rsi = rsi_series.iloc[-1] if not rsi_series.empty else None
-    except:
-        rsi = None
+    rsi = get_qqq_rsi_wilder()
 
     col1, col2 = st.columns([1, 1])
 
@@ -283,9 +294,9 @@ def market_sentiment_tab():
 
         if rsi is not None:
             rsi_interp, rsi_sentiment = interpret_rsi(rsi)
-            display_metric("📊 RSI (S&P500)", f"{rsi:.1f}", rsi_interp, rsi_sentiment)
+            display_metric("📊 RSI (나스닥)", f"{rsi:.1f}", rsi_interp, rsi_sentiment)
         else:
-            display_metric("📊 RSI (S&P500)", "N/A", "데이터 로딩 실패", "neutral")
+            display_metric("📊 RSI (나스닥)", "N/A", "데이터 로딩 실패", "neutral")
 
         if usd_krw_rate is not None:
             usd_krw_interp, usd_krw_sentiment = interpret_usd_krw(usd_krw_rate, usd_krw_change_amount, usd_krw_change_pct)
@@ -376,7 +387,7 @@ def market_sentiment_tab():
                 <li><strong>공포 & 탐욕 지수</strong>: 0-100 범위의 시장 심리 지표 (0=극도공포, 100=극도탐욕)</li>
                 <li><strong>VIX</strong>: 시장 변동성 예상 지수 (낮을수록 안정, 높을수록 불안)</li>
                 <li><strong>Put/Call 비율</strong>: 풋옵션 대비 콜옵션 거래량</li>
-                <li><strong>RSI</strong>: 상대강도지수 (30 이하 과매도, 70 이상 과매수)</li>
+                <li><strong>RSI</strong>: 나스닥(QQQ) 기준 상대강도지수, Wilder's Smoothing 방식 (41.66 이하 과매도, 69.00 이상 과매수)</li>
                 <li><strong>QQQ vs 200일 이동 평균선</strong>: 나스닥 ETF의 장기 추세 분석</li>
                 <li><strong>원달러 환율</strong>: USD/KRW 환율 (상승시 원화약세, 하락시 원화강세)</li>
             </ul>
