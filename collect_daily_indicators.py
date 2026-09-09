@@ -4,6 +4,7 @@ import requests
 import pandas as pd
 import numpy as np
 import yfinance as yf
+import re
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup
 
