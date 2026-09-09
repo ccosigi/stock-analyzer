@@ -27,7 +27,6 @@ def calculate_rsi(data: pd.Series, window: int = 14) -> float | None:
 
 
 def get_qqq_data():
-    """QQQ 현재가, 200일 이동평균, 이격률, 전일 대비 수익률"""
     try:
         qqq  = yf.Ticker("QQQ")
         hist = qqq.history(period="210d")
@@ -82,7 +81,6 @@ def get_sp500_rsi():
 
 
 def fetch_fgi():
-    """feargreedmeter.com 스크래핑"""
     try:
         url  = "https://feargreedmeter.com/"
         hdrs = {"User-Agent": "Mozilla/5.0"}
