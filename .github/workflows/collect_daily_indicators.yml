@@ -3,9 +3,9 @@ name: 📊 Daily Market Indicators Collector
 
 on:
   schedule:
-    # 매일 오전 7시 (KST) = UTC 22:00 (전날) → 미장 마감 후 수집
-    # 미국 동부시간 오후 4시 마감 기준, 데이터 반영까지 여유 있게 설정
-    - cron: '0 22 * * 1-5'   # 월~금 UTC 22:00 (KST 07:00)
+    # 화~토 오후 1시 30분 (KST) = UTC 04:30 → 미국 월~금 장 마감분 수집
+    # CBOE Put/Call은 미 동부 밤 10시 전후(KST 다음날 낮 12시 전후) 게시되므로 그 이후로 설정
+    - cron: '30 4 * * 2-6'   # 화~토 UTC 04:30 (KST 13:30)
   workflow_dispatch:          # 수동 실행 버튼 (테스트용)
 
 jobs:
