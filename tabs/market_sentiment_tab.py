@@ -321,7 +321,7 @@ def market_sentiment_tab():
         if pci is not None:
             pci_interp, pci_sentiment = interpret_pci(pci_latest)
             display_metric("⚖️ Put/Call 비율", f"{pci_latest:.2f}",
-                           f"{pci_interp} · 5일 평균 {pci:.3f} ({pci_date[5:]} 기준)", pci_sentiment)
+                           f"{pci_interp} ({pci_date[5:]} 기준)", pci_sentiment)
         else:
             display_metric("⚖️ Put/Call 비율", "N/A", "데이터 로딩 실패", "neutral")
 
@@ -419,7 +419,7 @@ def market_sentiment_tab():
             <ul>
                 <li><strong>공포 & 탐욕 지수</strong>: 0-100 범위의 시장 심리 지표 (0=극도공포, 100=극도탐욕)</li>
                 <li><strong>VIX</strong>: 시장 변동성 예상 지수 (낮을수록 안정, 높을수록 불안)</li>
-                <li><strong>Put/Call 비율</strong>: CBOE 주식 옵션(Equity) 풋/콜 거래량 비율의 최신 거래일 값 (0.83 초과 공포·매수 신호, 0.59 이하 낙관·현금화 고려). 5일 평균은 참고용</li>
+                <li><strong>Put/Call 비율</strong>: CBOE 주식 옵션(Equity) 풋/콜 거래량 비율의 최신 거래일 값 (0.83 초과 공포·매수 신호, 0.59 이하 낙관·현금화 고려)</li>
                 <li><strong>RSI</strong>: 나스닥(QQQ) 기준 상대강도지수, Wilder's Smoothing 방식 (41.66 이하 과매도, 69.00 이상 과매수)</li>
                 <li><strong>QQQ vs 200일 이동 평균선</strong>: 나스닥 ETF의 장기 추세 분석</li>
                 <li><strong>원달러 환율</strong>: USD/KRW 환율 (상승시 원화약세, 하락시 원화강세)</li>
