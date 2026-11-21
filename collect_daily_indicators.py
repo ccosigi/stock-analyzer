@@ -55,10 +55,14 @@ def get_vix():
 
 
 def get_usd_krw():
+    """USD/KRW 최신값. 야후 환율 일봉 종가는 하루 중간에 멈추는 경우가 있어 15분봉 마지막 값 사용"""
     try:
-        data = yf.Ticker("USDKRW=X").history(period="5d")
-        if not data.empty:
-            return round(float(data["Close"].iloc[-1]), 2)
+        t = yf.Ticker("USDKRW=X")
+        bars = t.history(period="5d", interval="15m")["Close"].dropna()
+        if bars.empty:
+            bars = t.history(period="5d")["Close"].dropna()
+        if not bars.empty:
+            return round(float(bars.iloc[-1]), 2)
     except Exception:
         pass
     return None

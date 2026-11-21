@@ -43,18 +43,31 @@ def get_vix_data():
     except Exception:
         return None
 
+def _usd_krw_latest_and_prev():
+    """USD/KRW (최신값, 전일 마지막 값). 야후 환율 일봉 종가는 하루 중간에 멈춰
+    갱신되지 않는 경우가 있어 15분봉을 쓰고, 실패하면 일봉으로 대체."""
+    t = yf.Ticker("USDKRW=X")
+    bars = t.history(period="5d", interval="15m")["Close"].dropna()
+    if not bars.empty:
+        dates = bars.index.date
+        prev = bars[dates < dates[-1]]
+        if not prev.empty:
+            return float(bars.iloc[-1]), float(prev.iloc[-1])
+    daily = t.history(period="5d")["Close"].dropna()
+    if len(daily) >= 2:
+        return float(daily.iloc[-1]), float(daily.iloc[-2])
+    return None, None
+
+
 @st.cache_data(ttl=60)
 def get_usd_krw_rate():
     try:
-        usd_krw = yf.Ticker("USDKRW=X")
-        data = usd_krw.history(period="5d")
-        if not data.empty and len(data) >= 2:
-            current_rate = data['Close'].iloc[-1]
-            prev_rate = data['Close'].iloc[-2]
-            change_amount = current_rate - prev_rate
-            change_pct = (change_amount / prev_rate) * 100
-            return current_rate, change_amount, change_pct
-        return None, None, None
+        current_rate, prev_rate = _usd_krw_latest_and_prev()
+        if current_rate is None:
+            return None, None, None
+        change_amount = current_rate - prev_rate
+        change_pct = (change_amount / prev_rate) * 100
+        return current_rate, change_amount, change_pct
     except Exception:
         return None, None, None
 
