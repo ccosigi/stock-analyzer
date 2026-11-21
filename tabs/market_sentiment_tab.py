@@ -3,7 +3,8 @@ import yfinance as yf
 import requests
 import re
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 import numpy as np
 
 
@@ -73,28 +74,48 @@ def fetch_fgi():
     except Exception:
         return None
 
-@st.cache_data(ttl=300)
-def fetch_pci():
-    try:
-        url = "https://www.cboe.com/markets/us/options/market-statistics/daily/"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        }
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        text = response.text
+PCI_MA_DAYS = 5
+CBOE_PCR_URL = "https://cdn.cboe.com/data/us/options/market_statistics/daily/{date}_daily_options"
 
-        # "EQUITY PUT/CALL RATIO" 뒤에 나오는 숫자 추출
-        match = re.search(
-            r'EQUITY\s*PUT\s*/\s*CALL\s*RATIO[^0-9\-]{0,50}([0-9]+\.[0-9]+)',
-            text,
-            re.IGNORECASE | re.DOTALL
-        )
-        if match:
-            return float(match.group(1))
+
+def _fetch_equity_pcr(date_str):
+    """지정한 거래일의 CBOE Equity Put/Call Ratio (미게시·휴장이면 None)"""
+    res = requests.get(CBOE_PCR_URL.format(date=date_str),
+                       headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+    if res.status_code != 200:
         return None
+    for item in res.json().get("ratios", []):
+        if item.get("name", "").upper() == "EQUITY PUT/CALL RATIO":
+            return float(item["value"])
+    return None
+
+
+@st.cache_data(ttl=1800)
+def fetch_pci():
+    """최근 게시된 5거래일 Equity Put/Call Ratio의 평균.
+    반환: (5일 평균, 최신 일간 값, 최신 거래일 'YYYY-MM-DD')
+    장중·마감 직후엔 최신 값이 전 거래일이므로 날짜를 함께 표시."""
+    try:
+        today_et = datetime.now(ZoneInfo("America/New_York")).date()
+        values, latest_date = [], None
+        for back in range(15):
+            d = today_et - timedelta(days=back)
+            if d.weekday() >= 5:
+                continue
+            ds = d.strftime("%Y-%m-%d")
+            val = _fetch_equity_pcr(ds)
+            if val is None:
+                continue
+            if latest_date is None:
+                latest_date = ds
+            values.append(val)
+            if len(values) == PCI_MA_DAYS:
+                break
+        if len(values) < PCI_MA_DAYS:
+            return None, None, None
+        return sum(values) / len(values), values[0], latest_date
     except Exception:
-        return None
+        return None, None, None
 
 @st.cache_data(ttl=60)
 def get_qqq_rsi_wilder(period_days=100, window=14):
@@ -148,15 +169,18 @@ def interpret_vix(vix):
         return "극심한 안도 (2차 현금화 / 과열)", "bullish"
 
 def interpret_pci(pci):
+    """Equity Put/Call 5일 평균. 2016-01~2026-07 KMeans 3구간의 구간 최댓값 기준
+    (높을수록 풋 매수 우세 = 공포 → 매수 쪽, VIX와 같은 방향)."""
     if pci is None:
         return "데이터 없음", "neutral"
-    if pci > 0.95:
-        return "하락 베팅 증가 (매수 신호)", "bearish"
-    elif pci < 0.65:
-        return "상승 베팅 증가 (매도 신호)", "bullish"
+    if pci > 0.712:
+        return "풋 우세 / 공포 (분할 매수)", "bearish"
+    elif pci > 0.566:
+        return "중립 (관망 / 보유)", "neutral"
     else:
-        return "중립적 상태", "neutral"
-        
+        return "콜 우세 / 낙관 (현금화 고려)", "bullish"
+
+
 def interpret_rsi(rsi):
     if rsi is None:
         return "데이터 없음", "neutral", None
@@ -232,7 +256,7 @@ def market_sentiment_tab():
     qqq_price, qqq_sma, qqq_high = get_qqq_data()
     vix = get_vix_data()
     fgi = fetch_fgi()
-    pci = fetch_pci()
+    pci, pci_latest, pci_date = fetch_pci()
     usd_krw_rate, usd_krw_change_amount, usd_krw_change_pct = get_usd_krw_rate()
 
     rsi = get_qqq_rsi_wilder()
@@ -288,7 +312,8 @@ def market_sentiment_tab():
     with col2:
         if pci is not None:
             pci_interp, pci_sentiment = interpret_pci(pci)
-            display_metric("⚖️ Put/Call 비율", f"{pci:.3f}", pci_interp, pci_sentiment)
+            display_metric("⚖️ Put/Call 비율 (5일 평균)", f"{pci:.3f}",
+                           f"{pci_interp} · 당일 {pci_latest:.2f} ({pci_date[5:]} 기준)", pci_sentiment)
         else:
             display_metric("⚖️ Put/Call 비율", "N/A", "데이터 로딩 실패", "neutral")
 
@@ -386,7 +411,7 @@ def market_sentiment_tab():
             <ul>
                 <li><strong>공포 & 탐욕 지수</strong>: 0-100 범위의 시장 심리 지표 (0=극도공포, 100=극도탐욕)</li>
                 <li><strong>VIX</strong>: 시장 변동성 예상 지수 (낮을수록 안정, 높을수록 불안)</li>
-                <li><strong>Put/Call 비율</strong>: 풋옵션 대비 콜옵션 거래량</li>
+                <li><strong>Put/Call 비율</strong>: CBOE 주식 옵션(Equity) 풋/콜 거래량 비율의 최근 5거래일 평균 (0.712 초과 공포·매수 쪽, 0.566 이하 낙관·현금화 쪽)</li>
                 <li><strong>RSI</strong>: 나스닥(QQQ) 기준 상대강도지수, Wilder's Smoothing 방식 (41.66 이하 과매도, 69.00 이상 과매수)</li>
                 <li><strong>QQQ vs 200일 이동 평균선</strong>: 나스닥 ETF의 장기 추세 분석</li>
                 <li><strong>원달러 환율</strong>: USD/KRW 환율 (상승시 원화약세, 하락시 원화강세)</li>

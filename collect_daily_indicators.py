@@ -94,36 +94,53 @@ def fetch_fgi():
         pass
     return None
 
-def fetch_pci():
+CBOE_PCR_URL = "https://cdn.cboe.com/data/us/options/market_statistics/daily/{date}_daily_options"
+
+
+def get_market_date() -> str | None:
+    """VIX·QQQ 종가가 가리키는 미국 거래일 (yfinance 마지막 봉 날짜, YYYY-MM-DD)"""
     try:
-        url = "https://www.cboe.com/markets/us/options/market-statistics/daily/"
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-        res = requests.get(url, headers=headers, timeout=10)
-        res.raise_for_status()
-        html = res.text
+        hist = yf.Ticker("SPY").history(period="5d")
+        if not hist.empty:
+            return hist.index[-1].strftime("%Y-%m-%d")
+    except Exception:
+        pass
+    return None
 
-        soup = BeautifulSoup(html, "html.parser")
 
-        for row in soup.find_all("tr"):
-            cells = [c.get_text(strip=True) for c in row.find_all(["td", "th"])]
-            if len(cells) >= 2 and "EQUITY PUT/CALL RATIO" in cells[0].upper():
-                try:
-                    return round(float(cells[1]), 4)
-                except ValueError:
-                    return None
-
-        # 백업: 표 파싱 실패 시 정규식으로 재시도
-        m = re.search(
-            r'EQUITY\s*PUT\s*/\s*CALL\s*RATIO\s*(?:</[^>]+>\s*)*<[^>]+>\s*([0-9]+\.[0-9]+)',
-            html, re.IGNORECASE
-        )
-        if m:
-            return round(float(m.group(1)), 4)
-
+def fetch_pci(market_date: str | None) -> float | None:
+    """CBOE 일별 통계 JSON에서 지정한 거래일의 Equity Put/Call Ratio.
+    아직 게시되지 않은 날(403/404)이면 None → 다음 실행 때 다시 채움.
+    (예전 HTML 페이지는 날짜 지정 없이 '게시된 최신일'을 보여줘서
+     수집 시각에 따라 당일/전일 값이 섞여 들어갔음)"""
+    if not market_date:
+        return None
+    try:
+        url = CBOE_PCR_URL.format(date=market_date)
+        res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+        if res.status_code != 200:
+            return None
+        for item in res.json().get("ratios", []):
+            if item.get("name", "").upper() == "EQUITY PUT/CALL RATIO":
+                return round(float(item["value"]), 4)
         return None
     except Exception:
         return None
-        
+
+
+def fill_missing_pci(df: pd.DataFrame, lookback: int = 10) -> pd.DataFrame:
+    """최근 lookback개 행 중 put_call_ratio가 빈 행을 그 행의 market_date 값으로 채움"""
+    if "market_date" not in df.columns:
+        return df
+    for idx in df.tail(lookback).index:
+        if pd.isna(df.at[idx, "put_call_ratio"]) and pd.notna(df.at[idx, "market_date"]):
+            val = fetch_pci(str(df.at[idx, "market_date"]))
+            if val is not None:
+                df.at[idx, "put_call_ratio"] = val
+                print(f"  PCI 보충: {df.at[idx, 'market_date']} → {val}")
+            time.sleep(0.5)
+    return df
+
 def collect() -> dict:
     now = datetime.now(timezone.utc)
     print(f"[{now.strftime('%Y-%m-%d %H:%M:%S')} UTC] 지표 수집 시작")
@@ -137,10 +154,10 @@ def collect() -> dict:
     fgi = fetch_fgi()
     print(f"  FGI: {fgi}")
 
-    # PCI는 rate limit 조심해서 살짝 딜레이
-    time.sleep(2)
-    pci = fetch_pci()
-    print(f"  PCI: {pci}")
+    # PCI는 VIX·QQQ와 같은 거래일 값으로 수집 (아직 미게시면 빈칸, 다음 실행 때 보충)
+    market_date = get_market_date()
+    pci = fetch_pci(market_date)
+    print(f"  거래일: {market_date} | PCI: {pci}")
 
     rsi = get_sp500_rsi()
     print(f"  SPY RSI: {rsi}")
@@ -155,6 +172,7 @@ def collect() -> dict:
     row = {
         "date":              now.strftime("%Y-%m-%d"),
         "collected_at_utc":  now.strftime("%Y-%m-%d %H:%M:%S"),
+        "market_date":       market_date,     # 종가 기준 미국 거래일
 
         # 공포&탐욕
         "fgi":               fgi,
@@ -196,6 +214,7 @@ def append_to_csv(row: dict):
     else:
         combined = new_df
 
+    combined = fill_missing_pci(combined)
     combined.to_csv(OUTPUT_FILE, index=False, encoding="utf-8-sig")
     print(f"\n✅ 저장 완료 → {OUTPUT_FILE}  (총 {len(combined)}행)")
 
