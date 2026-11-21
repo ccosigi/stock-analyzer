@@ -78,23 +78,30 @@ PCI_MA_DAYS = 5
 CBOE_PCR_URL = "https://cdn.cboe.com/data/us/options/market_statistics/daily/{date}_daily_options"
 
 
+class _PcrNotPublished(Exception):
+    """아직 게시되지 않았거나 휴장일 — 예외는 캐시되지 않아 다음 확인 때 다시 요청함"""
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
 def _fetch_equity_pcr(date_str):
-    """지정한 거래일의 CBOE Equity Put/Call Ratio (미게시·휴장이면 None)"""
+    """지정한 거래일의 CBOE Equity Put/Call Ratio.
+    게시된 값은 바뀌지 않으므로 하루 캐시, 미게시·휴장이면 _PcrNotPublished."""
     res = requests.get(CBOE_PCR_URL.format(date=date_str),
                        headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
     if res.status_code != 200:
-        return None
+        raise _PcrNotPublished(date_str)
     for item in res.json().get("ratios", []):
         if item.get("name", "").upper() == "EQUITY PUT/CALL RATIO":
             return float(item["value"])
-    return None
+    raise _PcrNotPublished(date_str)
 
 
-@st.cache_data(ttl=1800)
+@st.cache_data(ttl=600)
 def fetch_pci():
     """최근 게시된 5거래일 Equity Put/Call Ratio의 평균.
     반환: (5일 평균, 최신 일간 값, 최신 거래일 'YYYY-MM-DD')
-    장중·마감 직후엔 최신 값이 전 거래일이므로 날짜를 함께 표시."""
+    장중·마감 직후엔 최신 값이 전 거래일이므로 날짜를 함께 표시.
+    10분마다 확인하지만, 이미 받은 날짜는 캐시돼 실제 요청은 미게시일 1~2건뿐."""
     try:
         today_et = datetime.now(ZoneInfo("America/New_York")).date()
         values, latest_date = [], None
@@ -103,8 +110,9 @@ def fetch_pci():
             if d.weekday() >= 5:
                 continue
             ds = d.strftime("%Y-%m-%d")
-            val = _fetch_equity_pcr(ds)
-            if val is None:
+            try:
+                val = _fetch_equity_pcr(ds)
+            except _PcrNotPublished:
                 continue
             if latest_date is None:
                 latest_date = ds
