@@ -75,8 +75,6 @@ def fetch_fgi():
         return None
 
 PCI_MA_DAYS = 5
-# 당일 값 KMeans 3구간(2016-01~2026-07)의 중립 구간 최댓값. 넘으면 '당일 풋 급증' 표시 (약 5%의 날)
-PCI_DAILY_SPIKE = 0.83
 CBOE_PCR_URL = "https://cdn.cboe.com/data/us/options/market_statistics/daily/{date}_daily_options"
 
 
@@ -179,13 +177,13 @@ def interpret_vix(vix):
         return "극심한 안도 (2차 현금화 / 과열)", "bullish"
 
 def interpret_pci(pci):
-    """Equity Put/Call 5일 평균. 2016-01~2026-07 KMeans 3구간의 구간 최댓값 기준
+    """Equity Put/Call 당일 값. 2016-01~2026-07 당일 값 KMeans 3구간의 구간 최댓값 기준
     (높을수록 풋 매수 우세 = 공포 → 매수 쪽, VIX와 같은 방향)."""
     if pci is None:
         return "데이터 없음", "neutral"
-    if pci > 0.712:
-        return "풋 우세 / 공포 (분할 매수)", "bearish"
-    elif pci > 0.566:
+    if pci > 0.83:
+        return "풋 급증 / 공포 (매수 신호)", "bearish"
+    elif pci > 0.59:
         return "중립 (관망 / 보유)", "neutral"
     else:
         return "콜 우세 / 낙관 (현금화 고려)", "bullish"
@@ -321,11 +319,9 @@ def market_sentiment_tab():
 
     with col2:
         if pci is not None:
-            pci_interp, pci_sentiment = interpret_pci(pci)
-            pci_detail = f"{pci_interp} · 당일 {pci_latest:.2f} ({pci_date[5:]} 기준)"
-            if pci_latest > PCI_DAILY_SPIKE:
-                pci_detail += " · ⚠️ 당일 풋 급증 (매수 신호)"
-            display_metric("⚖️ Put/Call 비율 (5일 평균)", f"{pci:.3f}", pci_detail, pci_sentiment)
+            pci_interp, pci_sentiment = interpret_pci(pci_latest)
+            display_metric("⚖️ Put/Call 비율", f"{pci_latest:.2f}",
+                           f"{pci_interp} · 5일 평균 {pci:.3f} ({pci_date[5:]} 기준)", pci_sentiment)
         else:
             display_metric("⚖️ Put/Call 비율", "N/A", "데이터 로딩 실패", "neutral")
 
@@ -423,7 +419,7 @@ def market_sentiment_tab():
             <ul>
                 <li><strong>공포 & 탐욕 지수</strong>: 0-100 범위의 시장 심리 지표 (0=극도공포, 100=극도탐욕)</li>
                 <li><strong>VIX</strong>: 시장 변동성 예상 지수 (낮을수록 안정, 높을수록 불안)</li>
-                <li><strong>Put/Call 비율</strong>: CBOE 주식 옵션(Equity) 풋/콜 거래량 비율의 최근 5거래일 평균 (0.712 초과 공포·매수 쪽, 0.566 이하 낙관·현금화 쪽). 당일 값이 0.83을 넘으면 ⚠️ 당일 풋 급증 (매수 신호) 표시</li>
+                <li><strong>Put/Call 비율</strong>: CBOE 주식 옵션(Equity) 풋/콜 거래량 비율의 최신 거래일 값 (0.83 초과 공포·매수 신호, 0.59 이하 낙관·현금화 고려). 5일 평균은 참고용</li>
                 <li><strong>RSI</strong>: 나스닥(QQQ) 기준 상대강도지수, Wilder's Smoothing 방식 (41.66 이하 과매도, 69.00 이상 과매수)</li>
                 <li><strong>QQQ vs 200일 이동 평균선</strong>: 나스닥 ETF의 장기 추세 분석</li>
                 <li><strong>원달러 환율</strong>: USD/KRW 환율 (상승시 원화약세, 하락시 원화강세)</li>
